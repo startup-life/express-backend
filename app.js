@@ -10,7 +10,7 @@ import * as dbConnect from './database/index.js';
 import routes from './route/index.js';
 
 const app = express();
-const port = 80;
+const port = 3000;
 
 app.use(cors('*'));
 
