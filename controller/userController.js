@@ -178,8 +178,7 @@ export const loginUser = async (request, response) => {
             });
         }
 
-        request.session.userId = responseData.userId;
-        responseData.auth_token = request.sessionID;
+        responseData.sessionId = request.sessionID;
 
         const reqSessionData = {
             session: mysql.escape(request.sessionID),
