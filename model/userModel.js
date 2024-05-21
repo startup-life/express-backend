@@ -54,7 +54,6 @@ export const loginUser = async (requestData, response) => {
     if (results[0].file_id !== null) {
         const profileSql = `SELECT file_path FROM file_table WHERE file_id = ${results[0].file_id} AND deleted_at IS NULL AND file_category = 1;`;
         const profileResults = await dbConnect.query(profileSql, response);
-        console.log(profileResults);
         results[0].profileImagePath = profileResults[0].file_path;
     } else {
         results[0].profileImagePath = '/public/image/profile/default.png';
@@ -64,7 +63,7 @@ export const loginUser = async (requestData, response) => {
         userId: results[0].user_id,
         email: results[0].email,
         nickname: results[0].nickname,
-        profileImagePath: results[0].profile_image_path,
+        profileImagePath: results[0].profileImagePath,
         created_at: results[0].created_at,
         updated_at: results[0].updated_at,
         deleted_at: results[0].deleted_at,
@@ -97,7 +96,8 @@ export const getUser = async (requestData, response) => {
         userId: userData[0].user_id,
         email: userData[0].email,
         nickname: userData[0].nickname,
-        profile_image: userData[0].file_path,
+        profileImagePath: userData[0].file_path,
+        sessionId: userData[0].session_id,
         created_at: userData[0].created_at,
         updated_at: userData[0].updated_at,
         deleted_at: userData[0].deleted_at,

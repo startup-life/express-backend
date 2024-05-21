@@ -50,7 +50,7 @@ export const signupUser = async (request, response) => {
 
         const hashedPassword = await bcrypt.hash(password, SALTROUNDS);
 
-        const reqSignupData = {
+        const requestSignupData = {
             email: mysql.escape(email),
             password: mysql.escape(hashedPassword),
             nickname: mysql.escape(nickname),
@@ -59,14 +59,14 @@ export const signupUser = async (request, response) => {
                     ? null
                     : mysql.escape(profileImagePath),
         };
-        const resSignupData = await userModel.signUpUser(
-            reqSignupData,
+        const responseSignupData = await userModel.signUpUser(
+            requestSignupData,
             response,
         );
 
         if (profileImagePath !== null) {
             const reqProfileImageData = {
-                userId: resSignupData,
+                userId: responseSignupData,
                 profileImagePath: mysql.escape(profileImagePath),
             };
 
@@ -74,67 +74,16 @@ export const signupUser = async (request, response) => {
                 reqProfileImageData,
                 response,
             );
-            reqSignupData.file_id = resProfileImageData.insertId;
+            requestSignupData.file_id = resProfileImageData.insertId;
         }
 
         return response.status(STATUS_CODES.CREATED).json({
             status: STATUS_CODES.CREATED,
             message: MESSAGES.USER.SIGNUP_SUCCESS,
             data: {
-                userId: resSignupData.insertId,
-                profile_image_id: reqSignupData.file_id,
+                userId: responseSignupData.insertId,
+                profileImageId: requestSignupData.file_id,
             },
-        });
-    } catch (error) {
-        console.log(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
-            data: null,
-        });
-    }
-};
-
-// 프로필 사진 업로드
-export const uploadProfileImage = async (request, response) => {
-    try {
-        if (request.body.profileImage === undefined)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: 'invalid_profile_image',
-                data: null,
-            });
-        if (!request.params.userId)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.USER.INVALID_USER_ID,
-                data: null,
-            });
-
-        const { userId } = request.params;
-        const { profileImage } = request.body;
-
-        const requestData = {
-            userId: mysql.escape(userId),
-            profileImage: mysql.escape(profileImage),
-        };
-
-        const responseData = await userModel.uploadProfileImage(
-            requestData,
-            response,
-        );
-
-        if (responseData === null)
-            return response.status(STATUS_CODES.NOT_FOUND).json({
-                status: STATUS_CODES.NOT_FOUND,
-                message: MESSAGES.USER.NOT_FOUND_USER,
-                data: null,
-            });
-
-        return response.status(STATUS_CODES.CREATED).json({
-            status: STATUS_CODES.CREATED,
-            message: MESSAGES.FILE.FILE_UPLOAD_SUCCESS,
-            data: null,
         });
     } catch (error) {
         console.log(error);
@@ -420,9 +369,9 @@ export const checkAuth = async (request, response) => {
                 userId,
                 email: userData.email,
                 nickname: userData.nickname,
-                profileImagePath: userData.profile_image,
-                auth_token: userData.session_id,
-                auth_status: true,
+                profileImagePath: userData.profileImagePath,
+                sessionId: userData.sessionId,
+                authStatus: true,
             },
         });
     } catch (error) {
