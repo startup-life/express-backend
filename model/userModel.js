@@ -130,7 +130,6 @@ export const getUser = async requestData => {
 // 회원정보 수정
 export const updateUser = async (requestData, response) => {
     const { userId, nickname, profileImagePath } = requestData;
-    const parsedUserId = parseInt(userId, 10);
 
     const updateUserSql = `
     UPDATE user_table
@@ -139,7 +138,7 @@ export const updateUser = async (requestData, response) => {
     `;
     const updateUserResults = await dbConnect.query(updateUserSql, [
         nickname,
-        parsedUserId,
+        userId,
     ]);
 
     if (!updateUserResults) return null;
@@ -152,7 +151,7 @@ export const updateUser = async (requestData, response) => {
     VALUES (?, ?, 1);
     `;
     const profileImageResults = await dbConnect.query(profileImageSql, [
-        parsedUserId,
+        userId,
         profileImagePath,
     ]);
 
@@ -163,7 +162,7 @@ export const updateUser = async (requestData, response) => {
     `;
     const userProfileResults = await dbConnect.query(
         userProfileSql,
-        [parseInt(profileImageResults.insertId, 10), parsedUserId],
+        [parseInt(profileImageResults.insertId, 10), userId],
         response,
     );
 
@@ -171,15 +170,15 @@ export const updateUser = async (requestData, response) => {
 };
 
 // 비밀번호 변경
-export const changePassword = async (requestData, response) => {
+export const changePassword = async requestData => {
     const { userId, password } = requestData;
 
     const sql = `
     UPDATE user_table
-    SET password = ${password}
-    WHERE user_id = ${userId};
+    SET password = ?
+    WHERE user_id = ?;
     `;
-    const results = await dbConnect.query(sql, response);
+    const results = await dbConnect.query(sql, [password, userId]);
 
     if (!results) return null;
 
@@ -187,18 +186,18 @@ export const changePassword = async (requestData, response) => {
 };
 
 // 회원탈퇴
-export const softDeleteUser = async (requestData, response) => {
+export const softDeleteUser = async requestData => {
     const { userId } = requestData;
-    let sql = `SELECT * FROM user_table WHERE user_id = ${userId} AND deleted_at IS NULL;`;
-    let results = await dbConnect.query(sql, response);
+    let sql = `SELECT * FROM user_table WHERE user_id = ? AND deleted_at IS NULL;`;
+    let results = await dbConnect.query(sql, [userId]);
 
     if (!results) return null;
 
-    sql = `UPDATE user_table SET deleted_at = now() WHERE user_id = ${userId};`;
-    results = await dbConnect.query(sql, response);
+    sql = `UPDATE user_table SET deleted_at = now() WHERE user_id = ?;`;
+    results = await dbConnect.query(sql, [userId]);
 
-    sql = `UPDATE post_table SET deleted_at = now() WHERE user_id = ${userId};`;
-    await dbConnect.query(sql, response);
+    sql = `UPDATE post_table SET deleted_at = now() WHERE user_id = ?;`;
+    await dbConnect.query(sql, [userId]);
 
     return results[0];
 };
@@ -218,16 +217,16 @@ export const updateUserSession = async requestData => {
     return results;
 };
 
-export const destroyUserSession = async (requestData, response) => {
+export const destroyUserSession = async requestData => {
     const { userId } = requestData;
 
     const sql = `
     UPDATE user_table
     SET session_id = NULL
-    WHERE user_id = ${userId} AND session_id IS NOT NULL;
+    WHERE user_id = ? AND session_id IS NOT NULL;
     `;
 
-    const results = await dbConnect.query(sql, response);
+    const results = await dbConnect.query(sql, [userId]);
 
     if (!results) {
         return null;
@@ -236,22 +235,22 @@ export const destroyUserSession = async (requestData, response) => {
     return results;
 };
 
-export const checkEmail = async (requestData, response) => {
+export const checkEmail = async requestData => {
     const { email } = requestData;
 
-    const sql = `SELECT email FROM user_table WHERE email = ${email};`;
-    const results = await dbConnect.query(sql, response);
+    const sql = `SELECT email FROM user_table WHERE email = ?;`;
+    const results = await dbConnect.query(sql, [email]);
 
     if (!results || results.length === 0) return null;
 
     return results;
 };
 
-export const checkNickname = async (requestData, response) => {
+export const checkNickname = async requestData => {
     const { nickname } = requestData;
 
-    const sql = `SELECT nickname FROM user_table WHERE nickname = ${nickname};`;
-    const results = await dbConnect.query(sql, response);
+    const sql = `SELECT nickname FROM user_table WHERE nickname = ?;`;
+    const results = await dbConnect.query(sql, [nickname]);
 
     if (!results || results.length === 0) return null;
 

@@ -50,15 +50,6 @@ export const signupUser = async (request, response) => {
 
         const hashedPassword = await bcrypt.hash(password, SALTROUNDS);
 
-        // const requestSignupData = {
-        //     email: mysql.escape(email),
-        //     password: mysql.escape(hashedPassword),
-        //     nickname: mysql.escape(nickname),
-        //     profileImagePath:
-        //         profileImagePath === null
-        //             ? null
-        //             : mysql.escape(profileImagePath),
-        // };
         const requestSignupData = {
             email,
             password: hashedPassword,
@@ -79,7 +70,7 @@ export const signupUser = async (request, response) => {
         if (profileImagePath !== null) {
             const requestProfileImageData = {
                 userId: responseSignupData,
-                profileImagePath: mysql.escape(profileImagePath),
+                profileImagePath,
             };
 
             const responseProfileImageData = await userModel.uploadProfileImage(
@@ -175,7 +166,7 @@ export const getUser = async (request, response) => {
         const userId = request.params.user_id;
 
         const requestData = {
-            userId: mysql.escape(userId),
+            userId,
         };
         const responseData = await userModel.getUser(requestData, response);
 
@@ -215,14 +206,13 @@ export const updateUser = async (request, response) => {
 
         const userId = request.params.user_id;
         const { nickname, profileImagePath } = request.body;
-        console.log(profileImagePath);
 
         const requestData = {
-            userId: mysql.escape(userId),
-            nickname: mysql.escape(nickname),
+            userId,
+            nickname,
         };
         if (profileImagePath !== undefined)
-            requestData.profileImagePath = mysql.escape(profileImagePath);
+            requestData.profileImagePath = profileImagePath;
 
         const responseData = await userModel.updateUser(requestData, response);
 
@@ -273,8 +263,8 @@ export const changePassword = async (request, response) => {
 
         const hashedPassword = await bcrypt.hash(password, SALTROUNDS);
         const requestData = {
-            userId: mysql.escape(userId),
-            password: mysql.escape(hashedPassword),
+            userId,
+            password: hashedPassword,
         };
 
         const responseData = await userModel.changePassword(
@@ -318,7 +308,7 @@ export const softDeleteUser = async (request, response) => {
         const userId = request.params.user_id;
 
         const requestData = {
-            userId: mysql.escape(userId),
+            userId,
         };
         const responseData = await userModel.softDeleteUser(
             requestData,
@@ -441,7 +431,7 @@ export const checkEmail = async (request, response) => {
         const { email } = request.query;
 
         const requestData = {
-            email: mysql.escape(email),
+            email,
         };
 
         const responseData = await userModel.checkEmail(requestData, response);
@@ -473,7 +463,7 @@ export const checkNickname = async (request, response) => {
         const { nickname } = request.query;
 
         const requestData = {
-            nickname: mysql.escape(nickname),
+            nickname,
         };
 
         const responseData = await userModel.checkNickname(
