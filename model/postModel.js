@@ -17,6 +17,36 @@ export const writePlainPost = async requestData => {
     `;
     const nicknameResults = await dbConnect.query(nicknameSql, [userId]);
 
+    if (!nicknameResults.length) {
+        throw new Error('USER_NOT_FOUND');
+    }
+
+    const writePostSql = `
+    INSERT INTO post_table
+    (user_id, nickname, post_title, post_content)
+    VALUES (?, ?, ?, ?);
+    `;
+
+    const writePostResults = await dbConnect.query(writePostSql, [
+        userId,
+        nicknameResults[0].nickname,
+        postTitle,
+        postContent,
+    ]);
+
+    return writePostResults;
+};
+/*
+legacy code
+export const writePlainPost = async requestData => {
+    const { userId, postTitle, postContent } = requestData;
+
+    const nicknameSql = `
+    SELECT nickname FROM user_table
+    WHERE user_id = ? AND deleted_at IS NULL;
+    `;
+    const nicknameResults = await dbConnect.query(nicknameSql, [userId]);
+
     const writePostSql = `
     INSERT INTO post_table
     (user_id, nickname, post_title, post_content)
@@ -30,9 +60,11 @@ export const writePlainPost = async requestData => {
         postContent,
     ]);
     return writePostResults;
-};
+}; */
 
 // 파일 업로드
+/*
+legacy code
 export const uploadFile = async requestData => {
     const { userId, postId, filePath } = requestData;
 
@@ -59,7 +91,7 @@ export const uploadFile = async requestData => {
         postId,
     ]);
     return updatePostResults.insertId;
-};
+}; */
 
 // 게시글 목록 조회
 export const getPosts = async requestData => {
@@ -101,7 +133,7 @@ export const getPosts = async requestData => {
     `;
     const results = await dbConnect.query(sql, [limit, offset]);
 
-    if (!results) return null;
+    // if (!results) return null;
     return results;
 };
 
@@ -273,6 +305,22 @@ export const getPost = async requestData => {
 
 // 게시글 수정
 export const updatePost = async requestData => {
+    const { postTitle, postContent, postId } = requestData;
+    const sql = `
+        UPDATE post_table
+        SET post_title = ?, post_content = ?
+        WHERE post_id = ? AND deleted_at IS NULL;
+    `;
+    const results = await dbConnect.query(sql, [
+        postTitle,
+        postContent,
+        postId,
+    ]);
+    return results.affectedRows > 0 ? { postId, postTitle, postContent } : null;
+};
+/*
+legacy code
+export const updatePost = async requestData => {
     const { postId, userId, postTitle, postContent, attachFilePath } =
         requestData;
     console.log('attachFilePath', attachFilePath);
@@ -335,8 +383,20 @@ export const updatePost = async requestData => {
     }
 
     return { ...updatePostResults, post_id: postId };
-};
+}; */
 
+export const softDeletePost = async postId => {
+    const sql = `
+        UPDATE post_table
+        SET deleted_at = NOW()
+        WHERE post_id = ? AND deleted_at IS NULL;
+    `;
+    const results = await dbConnect.query(sql, [postId]);
+
+    return results.affectedRows > 0 ? results : null;
+};
+/*
+legacy code
 export const softDeletePost = async requestData => {
     const { postId } = requestData;
 
@@ -350,7 +410,7 @@ export const softDeletePost = async requestData => {
     if (!results) return null;
 
     return results;
-};
+}; */
 
 export const checkPostExists = async postId => {
     const sql = `
