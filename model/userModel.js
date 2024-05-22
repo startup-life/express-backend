@@ -2,58 +2,76 @@ import bcrypt from 'bcrypt';
 import * as dbConnect from '../database/index.js';
 
 // 회원가입
-export const signUpUser = async (requestData, response) => {
-    const { email, password, nickname } = requestData;
+export const signUpUser = async requestData => {
+    try {
+        const { email, password, nickname } = requestData;
 
-    const sql = `
-    INSERT INTO user_table
-    (email, password, nickname)
-    VALUES (${email}, ${password}, ${nickname});
-    `;
+        const checkEmailSql = 'SELECT email FROM user_table WHERE email = ?';
+        const checkEmailResults = await dbConnect.query(checkEmailSql, [email]);
 
-    const results = await dbConnect.query(sql, response);
-    return results.insertId;
+        if (checkEmailResults.length !== 0) return null;
+
+        const sql = `
+        INSERT INTO user_table (email, password, nickname)
+        VALUES (?, ?, ?)
+        `;
+        const results = await dbConnect.query(sql, [email, password, nickname]);
+
+        return results.insertId;
+    } catch (error) {
+        console.log('Error: [M]signupUser: ', error);
+        throw new Error('Database error');
+    }
 };
 
-export const uploadProfileImage = async (requestData, response) => {
+export const uploadProfileImage = async requestData => {
     const { userId, profileImagePath } = requestData;
 
     const profileImagePathSql = `
     INSERT INTO file_table
     (user_id, file_path, file_category)
-    VALUES (${userId}, ${profileImagePath}, 1);
+    VALUES (?, ?, 1);
     `;
-    const profileResults = await dbConnect.query(profileImagePathSql, response);
+    const profileResults = await dbConnect.query(profileImagePathSql, [
+        userId,
+        profileImagePath,
+    ]);
 
     const userProfileSql = `
     UPDATE user_table
-    SET file_id = ${profileResults.insertId}
-    WHERE user_id = ${userId};
+    SET file_id = ?
+    WHERE user_id = ?;
     `;
 
-    const userProfileResults = await dbConnect.query(userProfileSql, response);
+    const userProfileResults = await dbConnect.query(userProfileSql, [
+        profileResults.insertId,
+        userId,
+    ]);
     return userProfileResults.insertId;
 };
 
 // 로그인
-export const loginUser = async (requestData, response) => {
-    // 비밀번호 암호화 처리를 위한 부분
-    const reqPassword = requestData.password.slice(1, -1);
+export const loginUser = async requestData => {
+    const { email, password } = requestData;
 
-    const sql = `SELECT * FROM user_table WHERE email = ${requestData.email} AND deleted_at IS NULL;`;
-    const results = await dbConnect.query(sql, response);
+    const sql =
+        'SELECT * FROM user_table WHERE email = ? AND deleted_at IS NULL';
+    const results = await dbConnect.query(sql, [email]);
 
     if (!results[0] || results[0] === 'undefined' || results[0] === undefined)
         return null;
 
     // 비밀번호 검증
-    const match = await bcrypt.compare(reqPassword, results[0].password);
+    const match = await bcrypt.compare(password, results[0].password);
 
     if (!match) return null;
 
     if (results[0].file_id !== null) {
-        const profileSql = `SELECT file_path FROM file_table WHERE file_id = ${results[0].file_id} AND deleted_at IS NULL AND file_category = 1;`;
-        const profileResults = await dbConnect.query(profileSql, response);
+        const profileSql =
+            'SELECT file_path FROM file_table WHERE file_id = ? AND deleted_at IS NULL AND file_category = 1';
+        const profileResults = await dbConnect.query(profileSql, [
+            results[0].file_id,
+        ]);
         results[0].profileImagePath = profileResults[0].file_path;
     } else {
         results[0].profileImagePath = '/public/image/profile/default.png';
@@ -72,7 +90,7 @@ export const loginUser = async (requestData, response) => {
     return user;
 };
 
-export const getUser = async (requestData, response) => {
+export const getUser = async requestData => {
     const { userId } = requestData;
 
     /**
@@ -88,9 +106,13 @@ export const getUser = async (requestData, response) => {
     SELECT user_table.*, COALESCE(file_table.file_path, '/public/image/profile/default.jpg') AS file_path
     FROM user_table
     LEFT JOIN file_table ON user_table.file_id = file_table.file_id
-    WHERE user_table.user_id = ${userId} AND user_table.deleted_at IS NULL;
+    WHERE user_table.user_id = ? AND user_table.deleted_at IS NULL;
     `;
-    const userData = await dbConnect.query(sql, response);
+    const userData = await dbConnect.query(sql, [userId]);
+
+    if (userData.length === 0) {
+        throw new Error('User not found');
+    }
 
     const results = {
         userId: userData[0].user_id,
@@ -108,13 +130,17 @@ export const getUser = async (requestData, response) => {
 // 회원정보 수정
 export const updateUser = async (requestData, response) => {
     const { userId, nickname, profileImagePath } = requestData;
-    console.log(profileImagePath);
+    const parsedUserId = parseInt(userId, 10);
+
     const updateUserSql = `
     UPDATE user_table
-    SET nickname = ${nickname}
-    WHERE user_id = ${userId} AND deleted_at IS NULL;
+    SET nickname = ?
+    WHERE user_id = ? AND deleted_at IS NULL;
     `;
-    const updateUserResults = await dbConnect.query(updateUserSql, response);
+    const updateUserResults = await dbConnect.query(updateUserSql, [
+        nickname,
+        parsedUserId,
+    ]);
 
     if (!updateUserResults) return null;
 
@@ -123,19 +149,23 @@ export const updateUser = async (requestData, response) => {
     const profileImageSql = `
     INSERT INTO file_table
     (user_id, file_path, file_category)
-    VALUES (${userId}, ${profileImagePath}, 1);
+    VALUES (?, ?, 1);
     `;
-    const profileImageResults = await dbConnect.query(
-        profileImageSql,
-        response,
-    );
+    const profileImageResults = await dbConnect.query(profileImageSql, [
+        parsedUserId,
+        profileImagePath,
+    ]);
 
     const userProfileSql = `
     UPDATE user_table
-    SET file_id = ${profileImageResults.insertId}
-    WHERE user_id = ${userId} AND deleted_at IS NULL;
+    SET file_id = ?
+    WHERE user_id = ? AND deleted_at IS NULL;
     `;
-    const userProfileResults = await dbConnect.query(userProfileSql, response);
+    const userProfileResults = await dbConnect.query(
+        userProfileSql,
+        [parseInt(profileImageResults.insertId, 10), parsedUserId],
+        response,
+    );
 
     return userProfileResults;
 };
@@ -173,15 +203,15 @@ export const softDeleteUser = async (requestData, response) => {
     return results[0];
 };
 
-export const updateUserSession = async (requestData, response) => {
-    const { userId, session } = requestData;
+export const updateUserSession = async requestData => {
+    const { userId, sessionId } = requestData;
 
     const sql = `
     UPDATE user_table
-    SET session_id = ${session}
-    WHERE user_id = ${userId};
+    SET session_id = ?
+    WHERE user_id = ?;
     `;
-    const results = await dbConnect.query(sql, response);
+    const results = await dbConnect.query(sql, [sessionId, userId]);
 
     if (!results) return null;
 

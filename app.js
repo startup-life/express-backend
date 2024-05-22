@@ -76,28 +76,39 @@ app.use((request, response, next) => {
 });
 
 // 서버 시작하면 전체 유저 데이터 session_id NULL로 초기화
-const initSessionId = async (response, request) => {
+// 서버 시작하면 전체 유저 데이터 session_id NULL로 초기화
+const initSessionId = async () => {
     const sql = 'UPDATE user_table SET session_id = NULL;';
-    await dbConnect.query(sql, response, request);
+    await dbConnect.query(sql);
 };
 
-initSessionId();
+const startServer = async () => {
+    try {
+        await initSessionId();
+        console.log('Session IDs initialized');
 
-if (process.env.NODE_ENV === 'production') {
-    const option = {
-        key: readFileSync('/home/ubuntu/cert/privkey.pem'),
-        cert: readFileSync('/home/ubuntu/cert/fullchain.pem'),
-    };
+        if (process.env.NODE_ENV === 'production') {
+            const option = {
+                key: readFileSync('/home/ubuntu/cert/privkey.pem'),
+                cert: readFileSync('/home/ubuntu/cert/fullchain.pem'),
+            };
 
-    createServer(option, app).listen(443, () => {
-        console.log('[HTTPS] edu-web-backend app listening on port 443');
-    });
+            createServer(option, app).listen(443, () => {
+                console.log('[HTTPS] edu-web-backend app listening on port 443');
+            });
+        } else {
+            app.listen(port, () => {
+                console.log(`[HTTP] edu-web-backend app listening on port ${port}`);
+            });
+        }
+    } catch (error) {
+        console.error('Error initializing session IDs:', error);
+    }
+};
 
-    app.listen(port, () => {
-        console.log(`[HTTP] edu-web-backend app listening on port ${port}`);
-    });
-} else {
-    app.listen(port, () => {
-        console.log(`[HTTP] edu-web-backend app listening on port ${port}`);
-    });
-}
+// 서버 시작 함수 호출 및 프로미스 처리
+startServer().catch((error) => {
+    console.error('Failed to start server:', error);
+});
+
+export default app;

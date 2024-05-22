@@ -50,31 +50,43 @@ export const signupUser = async (request, response) => {
 
         const hashedPassword = await bcrypt.hash(password, SALTROUNDS);
 
+        // const requestSignupData = {
+        //     email: mysql.escape(email),
+        //     password: mysql.escape(hashedPassword),
+        //     nickname: mysql.escape(nickname),
+        //     profileImagePath:
+        //         profileImagePath === null
+        //             ? null
+        //             : mysql.escape(profileImagePath),
+        // };
         const requestSignupData = {
-            email: mysql.escape(email),
-            password: mysql.escape(hashedPassword),
-            nickname: mysql.escape(nickname),
-            profileImagePath:
-                profileImagePath === null
-                    ? null
-                    : mysql.escape(profileImagePath),
+            email,
+            password: hashedPassword,
+            nickname,
+            profileImagePath,
         };
-        const responseSignupData = await userModel.signUpUser(
-            requestSignupData,
-            response,
-        );
+
+        const responseSignupData =
+            await userModel.signUpUser(requestSignupData);
+
+        if (responseSignupData === null)
+            return response.status(STATUS_CODES.BAD_REQUEST).json({
+                status: STATUS_CODES.BAD_REQUEST,
+                message: MESSAGES.USER.ALREADY_EXIST_EMAIL,
+                data: null,
+            });
 
         if (profileImagePath !== null) {
-            const reqProfileImageData = {
+            const requestProfileImageData = {
                 userId: responseSignupData,
                 profileImagePath: mysql.escape(profileImagePath),
             };
 
-            const resProfileImageData = await userModel.uploadProfileImage(
-                reqProfileImageData,
+            const responseProfileImageData = await userModel.uploadProfileImage(
+                requestProfileImageData,
                 response,
             );
-            requestSignupData.file_id = resProfileImageData.insertId;
+            requestSignupData.file_id = responseProfileImageData.insertId;
         }
 
         return response.status(STATUS_CODES.CREATED).json({
@@ -114,13 +126,14 @@ export const loginUser = async (request, response) => {
         const { email, password } = request.body;
 
         const requestData = {
-            email: mysql.escape(email),
-            password: mysql.escape(password),
+            email,
+            password,
         };
+
         const responseData = await userModel.loginUser(requestData, response);
 
         if (!responseData || responseData === null) {
-            return response.status(401).json({
+            return response.status(STATUS_CODES.NOT_AUTHORIZED).json({
                 status: 401,
                 message: MESSAGES.USER.INVALID_EMAIL_OR_PASSWORD,
                 data: null,
@@ -129,12 +142,12 @@ export const loginUser = async (request, response) => {
 
         responseData.sessionId = request.sessionID;
 
-        const reqSessionData = {
-            session: mysql.escape(request.sessionID),
-            userId: mysql.escape(responseData.userId),
+        const requestSessionData = {
+            sessionId: request.sessionID,
+            userId: responseData.userId,
         };
 
-        await userModel.updateUserSession(reqSessionData, response);
+        await userModel.updateUserSession(requestSessionData, response);
 
         return response.status(STATUS_CODES.OK).json({
             status: STATUS_CODES.OK,
@@ -142,7 +155,7 @@ export const loginUser = async (request, response) => {
             data: responseData,
         });
     } catch (error) {
-        console.log(error);
+        console.log('Login error: ', error);
         return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: STATUS_CODES.INTERNAL_SERVER_ERROR,
             message: MESSAGES.INTERNAL_SERVER_ERROR,
@@ -151,7 +164,6 @@ export const loginUser = async (request, response) => {
     }
 };
 
-// 유저 정보 가져오기
 export const getUser = async (request, response) => {
     try {
         if (!request.params.user_id)
@@ -239,21 +251,19 @@ export const updateUser = async (request, response) => {
 // 비밀번호 변경
 export const changePassword = async (request, response) => {
     try {
-        if (!request.params.user_id)
+        if (!request.headers.userid)
             return response.status(STATUS_CODES.BAD_REQUEST).json({
                 status: STATUS_CODES.BAD_REQUEST,
                 message: MESSAGES.USER.INVALID_USER_ID,
                 data: null,
             });
 
-        const userId = request.params.user_id;
+        const userId = request.headers.userid;
         const { password } = request.body;
 
-        // 8자 이상, 특수문자 포함
-        const passwordRegex =
-            /^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-])(?=.*[0-9]).{8,16}$/;
+        const passwordValid = validPassword(password);
 
-        if (!password || !passwordRegex.test(password)) {
+        if (!password || !passwordValid) {
             return response.status(STATUS_CODES.BAD_REQUEST).json({
                 status: STATUS_CODES.BAD_REQUEST,
                 message: MESSAGES.USER.INVALID_USER_PASSWORD,
@@ -271,6 +281,7 @@ export const changePassword = async (request, response) => {
             requestData,
             response,
         );
+
         if (responseData === null) {
             return response.status(STATUS_CODES.NOT_FOUND).json({
                 status: STATUS_CODES.NOT_FOUND,
@@ -341,7 +352,7 @@ export const checkAuth = async (request, response) => {
         const userId = request.headers.userid;
 
         const requestData = {
-            userId: mysql.escape(userId),
+            userId,
         };
 
         const userData = await userModel.getUser(requestData, response);
@@ -352,8 +363,6 @@ export const checkAuth = async (request, response) => {
                 message: MESSAGES.USER.NOT_FOUND_USER,
                 data: null,
             });
-
-        console.log(userData);
 
         if (parseInt(userData.userId, 10) !== parseInt(userId, 10))
             return response.status(STATUS_CODES.NOT_AUTHORIZED).json({
@@ -371,7 +380,7 @@ export const checkAuth = async (request, response) => {
                 nickname: userData.nickname,
                 profileImagePath: userData.profileImagePath,
                 sessionId: userData.sessionId,
-                authStatus: true,
+                auth_status: true,
             },
         });
     } catch (error) {
@@ -426,41 +435,6 @@ export const logoutUser = async (request, response) => {
         });
     }
 };
-/*
-legacy code
-
-export const logoutUser = async (request, response) => {
-    try {
-        const userId = request.headers.userid;
-        request.session.destroy(err => {
-            if (err) {
-                console.log(err);
-                return response
-                    .status(STATUS_CODES.INTERNAL_SERVER_ERROR)
-                    .json({
-                        status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-                        message: MESSAGES.INTERNAL_SERVER_ERROR,
-                        data: null,
-                    });
-            }
-
-            const requestData = {
-                userId,
-            };
-            userModel.destroyUserSession(requestData, response);
-
-            return response.status(204).end();
-        });
-    } catch (error) {
-        console.log(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
-            data: null,
-        });
-    }
-};
- */
 
 export const checkEmail = async (request, response) => {
     try {

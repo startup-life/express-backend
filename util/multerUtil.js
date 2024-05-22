@@ -6,6 +6,7 @@ const POST_PATH = './public/image/post';
 // 프로필 이미지를 위한 multer storage 설정
 const profileStorage = multer.diskStorage({
     destination: (request, file, callback) => {
+        console.log('profileImage');
         callback(null, PROFILE_PATH);
     },
     filename: (request, file, callback) => {

@@ -20,12 +20,36 @@ const config = {
     waitForConnections: true,
     port: process.env.DB_PORT,
     connectionLimit: 10, // 기본값은 10
+    namedPlaceholders: true,
 };
 
 /* DB Pool 생성 */
 const pool = mysql.createPool(config);
 
 /* 쿼리 함수 */
+const query = async (queryString, params = []) => {
+    const now = moment().format('YYYY-MM-DD HH:mm:ss');
+    console.log(`${now} - ${colors.yellow(queryString)}`);
+
+    try {
+        const connection = await pool.getConnection();
+        try {
+            const [rows] = await connection.execute(queryString, params);
+            connection.release();
+            return rows;
+        } catch (error) {
+            console.error('Query Error:', error);
+            connection.release();
+            throw new Error('Query error');
+        }
+    } catch (error) {
+        console.error('DB Error:', error);
+        throw new Error('Database connection error');
+    }
+};
+/*
+legacy code
+
 const query = async (queryString, response, request) => {
     const now = moment().format('YYYY-MM-DD HH:mm:ss');
     // 색상 선택: yellow, cyan, white, magenta, green, red, grey, blue, rainbow
@@ -71,5 +95,6 @@ const query = async (queryString, response, request) => {
         });
     }
 };
+*/
 
 export { config, pool, query };
