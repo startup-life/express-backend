@@ -28,7 +28,6 @@ export const writeComment = async commentData => {
 
     return results;
 };
-
 /*
 legacy code
 
@@ -76,6 +75,20 @@ export const writeComment = async requestData => {
 };
 */
 
+export const getComments = async postId => {
+    const sql = `
+        SELECT ct.*, ut.file_id, COALESCE(ft.file_path, '/public/image/profile/default.jpg') AS profileImage
+        FROM comment_table AS ct
+        LEFT JOIN user_table AS ut ON ct.user_id = ut.user_id
+        LEFT JOIN file_table AS ft ON ut.file_id = ft.file_id
+        WHERE ct.post_id = ? AND ct.deleted_at IS NULL;
+    `;
+    const results = await dbConnect.query(sql, [postId]);
+
+    return results.length > 0 ? results : null;
+};
+/*
+legacy code
 export const getComments = async requestData => {
     const { postId } = requestData;
 
@@ -90,8 +103,29 @@ export const getComments = async requestData => {
 
     if (!results || results.length === 0) return null;
     return results;
-};
+}; */
+export const updateComment = async requestData => {
+    const { postId, commentId, userId, commentContent } = requestData;
 
+    const sql = `
+        UPDATE comment_table
+        SET comment_content = ?
+        WHERE post_id = ? 
+        AND comment_id = ? 
+        AND user_id = ?
+        AND deleted_at IS NULL;
+    `;
+    const results = await dbConnect.query(sql, [
+        commentContent,
+        postId,
+        commentId,
+        userId,
+    ]);
+
+    return results.affectedRows > 0 ? results : 'update_error';
+};
+/*
+legacy code
 export const updateComment = async requestData => {
     const { postId, commentId, userId, commentContent } = requestData;
 
@@ -121,7 +155,7 @@ export const updateComment = async requestData => {
     if (!results || results.affectedRows === 0) return 'update_error';
 
     return results;
-};
+}; */
 
 export const softDeleteComment = async requestData => {
     const { postId, commentId, userId } = requestData;

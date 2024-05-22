@@ -2,6 +2,7 @@ import * as commentModel from '../model/commentModel.js';
 import { STATUS_CODES, MESSAGES } from '../util/responseConstants.js';
 import * as userModel from '../model/userModel.js';
 import * as postModel from '../model/postModel.js';
+import * as dbConnect from '../database/index.js';
 
 /**
  * 댓글 작성
@@ -171,6 +172,49 @@ export const writeComment = async (request, response) => {
 // 댓글 조회
 export const getComments = async (request, response) => {
     try {
+        const postId = request.params.post_id;
+
+        if (!postId) throw new Error('POST_ID_NOT_FOUND');
+
+        const results = await commentModel.getComments(postId);
+
+        if (!results) throw new Error('NOT_A_SINGLE_COMMENT');
+
+        return response.status(STATUS_CODES.OK).json({
+            status: STATUS_CODES.OK,
+            message: null,
+            data: results,
+        });
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+
+        let statusCode = STATUS_CODES.INTERNAL_SERVER_ERROR;
+        let message = MESSAGES.INTERNAL_SERVER_ERROR;
+
+        switch (error.message) {
+            case 'POST_ID_NOT_FOUND':
+                statusCode = STATUS_CODES.BAD_REQUEST;
+                message = MESSAGES.POST.INVALID_POST_ID;
+                break;
+            case 'NOT_A_SINGLE_COMMENT':
+                statusCode = STATUS_CODES.NOT_FOUND;
+                message = MESSAGES.COMMENT.NOT_A_SINGLE_COMMENT;
+                break;
+            default:
+                break;
+        }
+
+        return response.status(statusCode).json({
+            status: statusCode,
+            message,
+            data: null,
+        });
+    }
+};
+/*
+legacy code
+export const getComments = async (request, response) => {
+    try {
         if (!request.params.post_id)
             return response.status(STATUS_CODES.BAD_REQUEST).json({
                 status: STATUS_CODES.BAD_REQUEST,
@@ -205,9 +249,98 @@ export const getComments = async (request, response) => {
             data: null,
         });
     }
-};
+}; */
 
 // 댓글 수정
+export const updateComment = async (request, response) => {
+    const postId = request.params.post_id;
+    const commentId = request.params.comment_id;
+    const { commentContent } = request.body;
+    const userId = request.headers.userid;
+
+    if (!postId) {
+        return response.status(STATUS_CODES.BAD_REQUEST).json({
+            status: STATUS_CODES.BAD_REQUEST,
+            message: MESSAGES.POST.INVALID_POST_ID,
+            data: null,
+        });
+    }
+
+    if (!commentId) {
+        return response.status(STATUS_CODES.BAD_REQUEST).json({
+            status: STATUS_CODES.BAD_REQUEST,
+            message: MESSAGES.COMMENT.INVALID_COMMENT_ID,
+            data: null,
+        });
+    }
+
+    if (!commentContent) {
+        return response.status(STATUS_CODES.BAD_REQUEST).json({
+            status: STATUS_CODES.BAD_REQUEST,
+            message: MESSAGES.COMMENT.INVALID_COMMENT_CONTENT,
+            data: null,
+        });
+    }
+
+    if (commentContent.length > MAX_COMMENT_LENGTH) {
+        return response.status(STATUS_CODES.BAD_REQUEST).json({
+            status: STATUS_CODES.BAD_REQUEST,
+            message: MESSAGES.COMMENT.INVALID_COMMENT_CONTENT_LENGTH,
+            data: null,
+        });
+    }
+
+    try {
+        const checkPostData = {
+            postId,
+        };
+        const checkPostResult = await postModel.getPost(checkPostData);
+
+        if (!checkPostResult) throw new Error('POST_NOT_FOUND');
+
+        const requestData = {
+            postId,
+            commentId,
+            userId,
+            commentContent,
+        };
+        const results = await commentModel.updateComment(requestData);
+
+        if (!results) throw new Error('NOT_A_SINGLE_COMMENT');
+
+        return response.status(STATUS_CODES.OK).json({
+            status: STATUS_CODES.OK,
+            message: MESSAGES.COMMENT.UPDATE_COMMENT_SUCCESS,
+            data: null,
+        });
+    } catch (error) {
+        console.error('Error updating comment:', error);
+
+        let statusCode = STATUS_CODES.INTERNAL_SERVER_ERROR;
+        let message = MESSAGES.INTERNAL_SERVER_ERROR;
+
+        switch (error.message) {
+            case 'POST_NOT_FOUND':
+                statusCode = STATUS_CODES.NOT_FOUND;
+                message = MESSAGES.POST.NOT_FOUND;
+                break;
+            case 'NOT_A_SINGLE_COMMENT':
+                statusCode = STATUS_CODES.NOT_FOUND;
+                message = MESSAGES.COMMENT.NOT_A_SINGLE_COMMENT;
+                break;
+            default:
+                break;
+        }
+
+        return response.status(statusCode).json({
+            status: statusCode,
+            message,
+            data: null,
+        });
+    }
+};
+/*
+legacy code
 export const updateComment = async (request, response) => {
     try {
         if (!request.params.post_id)
@@ -275,7 +408,7 @@ export const updateComment = async (request, response) => {
             data: null,
         });
     }
-};
+}; */
 
 // 댓글 삭제
 export const softDeleteComment = async (request, response) => {
