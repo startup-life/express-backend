@@ -46,11 +46,10 @@ export const writePost = async (request, response) => {
         const userId = request.headers.userid;
 
         const requestData = {
-            userId: mysql.escape(userId),
-            postTitle: mysql.escape(postTitle),
-            postContent: mysql.escape(postContent),
-            attachFilePath:
-                attachFilePath === null ? null : mysql.escape(attachFilePath),
+            userId,
+            postTitle,
+            postContent,
+            attachFilePath: attachFilePath === null ? null : attachFilePath,
         };
         const results = await postModel.writePlainPost(requestData, response);
 
@@ -63,9 +62,9 @@ export const writePost = async (request, response) => {
 
         if (attachFilePath != null) {
             const reqFileData = {
-                userId: mysql.escape(userId),
+                userId,
                 postId: results.insertId,
-                filePath: mysql.escape(attachFilePath),
+                filePath: attachFilePath,
             };
 
             const resFileData = await postModel.uploadFile(
@@ -78,47 +77,6 @@ export const writePost = async (request, response) => {
         return response.status(STATUS_CODES.CREATED).json({
             status: STATUS_CODES.CREATED,
             message: MESSAGES.POST.WRITE_POST_SUCCESS,
-            data: results,
-        });
-    } catch (error) {
-        console.error(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
-            data: null,
-        });
-    }
-};
-
-// 파일 업로드
-export const uploadFile = async (request, response) => {
-    try {
-        if (!request.filePath)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.FILE.INVALID_FILE_PATH,
-                data: null,
-            });
-
-        const { userId, postId, filePath } = request.body;
-
-        const requestData = {
-            userId,
-            postId,
-            filePath,
-        };
-        const results = await postModel.uploadFile(requestData, response);
-
-        if (!results || results === null)
-            return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-                status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-                message: MESSAGES.INTERNAL_SERVER_ERROR,
-                data: null,
-            });
-
-        return response.status(STATUS_CODES.CREATED).json({
-            status: STATUS_CODES.CREATED,
-            message: null,
             data: results,
         });
     } catch (error) {
@@ -232,14 +190,12 @@ export const updatePost = async (request, response) => {
         const { postTitle, postContent, attachFilePath } = request.body;
 
         const requestData = {
-            postId: mysql.escape(postId),
-            userId: mysql.escape(userId),
-            postTitle: mysql.escape(postTitle),
-            postContent: mysql.escape(postContent),
+            postId,
+            userId,
+            postTitle,
+            postContent,
             attachFilePath:
-                attachFilePath === undefined
-                    ? null
-                    : mysql.escape(attachFilePath),
+                attachFilePath === undefined ? null : attachFilePath,
         };
         const results = await postModel.updatePost(requestData, response);
 
@@ -278,7 +234,7 @@ export const softDeletePost = async (request, response) => {
         const postId = request.params.post_id;
 
         const requestData = {
-            postId: mysql.escape(postId),
+            postId,
         };
         const results = await postModel.softDeletePost(requestData, response);
 
