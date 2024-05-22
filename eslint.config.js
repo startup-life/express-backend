@@ -18,6 +18,16 @@ export default [
         rules: {
             'prettier/prettier': ['error'],
             'no-console': 'off',
+            'import/extensions': [
+                'error',
+                'ignorePackages',
+                {
+                    js: 'always',
+                    jsx: 'always',
+                    ts: 'never',
+                    tsx: 'never',
+                },
+            ],
         },
         ignores: [
             'node_modules/',

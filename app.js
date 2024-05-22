@@ -84,21 +84,25 @@ const initSessionId = async () => {
 
 const startServer = async () => {
     try {
-        await initSessionId();
-        console.log('Session IDs initialized');
-
         if (process.env.NODE_ENV === 'production') {
+            await initSessionId();
+            console.log('Session IDs initialized');
+
             const option = {
                 key: readFileSync('/home/ubuntu/cert/privkey.pem'),
                 cert: readFileSync('/home/ubuntu/cert/fullchain.pem'),
             };
 
             createServer(option, app).listen(443, () => {
-                console.log('[HTTPS] edu-web-backend app listening on port 443');
+                console.log(
+                    '[HTTPS] edu-web-backend app listening on port 443',
+                );
             });
         } else {
             app.listen(port, () => {
-                console.log(`[HTTP] edu-web-backend app listening on port ${port}`);
+                console.log(
+                    `[HTTP] edu-web-backend app listening on port ${port}`,
+                );
             });
         }
     } catch (error) {
@@ -107,7 +111,7 @@ const startServer = async () => {
 };
 
 // 서버 시작 함수 호출 및 프로미스 처리
-startServer().catch((error) => {
+startServer().catch(error => {
     console.error('Failed to start server:', error);
 });
 

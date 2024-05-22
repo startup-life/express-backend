@@ -256,3 +256,12 @@ export const checkNickname = async requestData => {
 
     return results;
 };
+
+export const getNicknameById = async userId => {
+    const sql = `
+    SELECT nickname FROM user_table
+    WHERE user_id = ? AND deleted_at IS NULL;
+    `;
+    const results = await dbConnect.query(sql, [userId]);
+    return results.length ? results[0].nickname : null;
+};

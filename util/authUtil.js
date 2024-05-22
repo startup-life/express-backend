@@ -1,5 +1,5 @@
 import * as dbConnect from '../database/index.js';
-import { STATUS_CODES, MESSAGES } from '../util/responseConstants.js';
+import { STATUS_CODES, MESSAGES } from './responseConstants.js';
 
 const isLoggedIn = async (request, response, next) => {
     const { method, url } = request;
@@ -21,12 +21,8 @@ const isLoggedIn = async (request, response, next) => {
 
     try {
         const userSessionData = await dbConnect.query(
-            `SELECT session_id FROM user_table WHERE user_id = ${userId};`,
-            response,
-        );
-
-        console.log(
-            `[isLoggedIn] userSessionData: ${JSON.stringify(userSessionData)}`,
+            `SELECT session_id FROM user_table WHERE user_id = ?;`,
+            [userId],
         );
 
         if (

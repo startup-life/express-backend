@@ -351,3 +351,12 @@ export const softDeletePost = async requestData => {
 
     return results;
 };
+
+export const checkPostExists = async postId => {
+    const sql = `
+    SELECT * FROM post_table
+    WHERE post_id = ? AND deleted_at IS NULL;
+    `;
+    const results = await dbConnect.query(sql, [postId]);
+    return results.length > 0;
+};

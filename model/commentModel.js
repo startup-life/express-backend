@@ -1,5 +1,37 @@
 import * as dbConnect from '../database/index.js';
 
+export const writeComment = async commentData => {
+    const { postId, userId, nickname, commentContent } = commentData;
+
+    const sql = `
+    INSERT INTO comment_table
+    (post_id, user_id, nickname, comment_content)
+    VALUES (?, ?, ?, ?);
+    `;
+    const results = await dbConnect.query(sql, [
+        postId,
+        userId,
+        nickname,
+        commentContent,
+    ]);
+
+    if (!results) {
+        throw new Error('INSERT_ERROR');
+    }
+
+    const commentsCountSql = `
+    UPDATE post_table
+    SET comment_count = comment_count + 1
+    WHERE post_id = ?;
+    `;
+    await dbConnect.query(commentsCountSql, [postId]);
+
+    return results;
+};
+
+/*
+legacy code
+
 export const writeComment = async requestData => {
     const { postId, userId, commentContent } = requestData;
 
@@ -42,6 +74,7 @@ export const writeComment = async requestData => {
 
     return results;
 };
+*/
 
 export const getComments = async requestData => {
     const { postId } = requestData;

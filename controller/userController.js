@@ -1,4 +1,3 @@
-import mysql from 'mysql2';
 import bcrypt from 'bcrypt';
 import * as userModel from '../model/userModel.js';
 import { validEmail, validNickname, validPassword } from '../util/validUtil.js';
