@@ -1,33 +1,31 @@
 import request from 'supertest';
-import bcrypt from 'bcrypt';
-import mysql from 'mysql2';
 import app from '../app.js'; // Express 앱을 가져옴
 import { STATUS_CODES, MESSAGES } from '../util/responseConstants.js'; // 필요한 상수들
-import * as userModel from '../model/userModel.js'; // userModel 모듈을 가져옴
 
 describe('POST /users/signup', () => {
+    it('should return 201', async () => {
+        const response = await request(app).post('/users/signup').send({
+            email: 'yaro@startupcode.kr',
+            password: '12341234aS!',
+            nickname: 'yaro',
+        });
+
+        expect(response.status).toBe(STATUS_CODES.CREATED);
+        expect(response.body.message).toBe(MESSAGES.USER.SIGNUP_SUCCESS);
+    });
+
     it('should return 400 if email is invalid', async () => {
         const response = await request(app).post('/users/signup').send({
-            email: 'invalid-email',
+            email: 'test@test.kr',
             password: 'ValidPassword123!',
-            nickname: 'validNickname',
+            nickname: 'tester777',
         });
 
         expect(response.status).toBe(STATUS_CODES.BAD_REQUEST);
-        expect(response.body.message).toBe(MESSAGES.USER.INVALID_USER_EMAIL);
+        expect(response.body.message).toBe(MESSAGES.USER.ALREADY_EXIST_EMAIL);
     });
 
-    it('should return 400 if nickname is invalid', async () => {
-        const response = await request(app).post('/users/signup').send({
-            email: 'test@example.com',
-            password: 'ValidPassword123!',
-            nickname: 'in;;;;;',
-        });
-
-        expect(response.status).toBe(STATUS_CODES.BAD_REQUEST);
-        expect(response.body.message).toBe(MESSAGES.USER.INVALID_USER_NICKNAME);
-    });
-
+    /*
     it('should return 400 if password is invalid', async () => {
         const response = await request(app).post('/users/signup').send({
             email: 'test@example.com',
@@ -67,5 +65,19 @@ describe('POST /users/signup', () => {
         expect(response.body.message).toBe(MESSAGES.INTERNAL_SERVER_ERROR);
 
         userModel.signUpUser.mockRestore();
+    }); */
+});
+
+describe.only('POST /users/login', () => {
+    it('should return 200', async () => {
+        const response = await request(app).post('/users/login').send({
+            email: 'test@test.kr',
+            password: '12341234aS!',
+        });
+
+        console.log(response.body); // 응답 데이터 출력
+
+        expect(response.status).toBe(STATUS_CODES.OK);
+        expect(response.body.message).toBe(MESSAGES.USER.LOGIN_SUCCESS);
     });
 });

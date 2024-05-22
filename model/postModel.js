@@ -360,3 +360,9 @@ export const checkPostExists = async postId => {
     const results = await dbConnect.query(sql, [postId]);
     return results.length > 0;
 };
+
+export const softDeletePostsByUserId = async userId => {
+    const sql = 'UPDATE post_table SET deleted_at = now() WHERE user_id = ?';
+    const results = await dbConnect.query(sql, [userId]);
+    return results.affectedRows ? results : null;
+};

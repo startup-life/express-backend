@@ -1,4 +1,3 @@
-import bcrypt from 'bcrypt';
 import * as dbConnect from '../database/index.js';
 
 // 회원가입
@@ -16,6 +15,36 @@ export const signUpUser = async requestData => {
         VALUES (?, ?, ?)
         `;
         const results = await dbConnect.query(sql, [email, password, nickname]);
+
+        return results.insertId;
+    } catch (error) {
+        console.log('Error: [M]signupUser: ', error);
+        throw new Error('Database error');
+    }
+};
+/*
+legacy code
+
+export const signUpUser = async requestData => {
+    try {
+        const { email, password, nickname } = requestData;
+
+        const checkEmailSql = 'SELECT email FROM user_table WHERE email = ?';
+        const [checkEmailResults] = await dbConnect.query(checkEmailSql, [
+            email,
+        ]);
+
+        if (checkEmailResults.length !== 0) return null;
+
+        const sql = `
+        INSERT INTO user_table (email, password, nickname)
+        VALUES (?, ?, ?)
+        `;
+        const [results] = await dbConnect.query(sql, [
+            email,
+            password,
+            nickname,
+        ]);
 
         return results.insertId;
     } catch (error) {
@@ -49,8 +78,33 @@ export const uploadProfileImage = async requestData => {
     ]);
     return userProfileResults.insertId;
 };
+*/
 
 // 로그인
+export const loginUser = async email => {
+    const sql =
+        'SELECT * FROM user_table WHERE email = ? AND deleted_at IS NULL';
+    const results = await dbConnect.query(sql, [email]);
+
+    return results.length ? results[0] : null;
+};
+
+export const getProfileImagePath = async fileId => {
+    const profileSql = `
+        SELECT file_path 
+        FROM file_table 
+        WHERE file_id = ? 
+        AND deleted_at IS NULL 
+        AND file_category = 1
+    `;
+    const profileResults = await dbConnect.query(profileSql, [fileId]);
+
+    return profileResults.length
+        ? profileResults[0].file_path
+        : '/public/image/profile/default.png';
+};
+/*
+legacy code
 export const loginUser = async requestData => {
     const { email, password } = requestData;
 
@@ -89,19 +143,35 @@ export const loginUser = async requestData => {
 
     return user;
 };
+*/
 
+/**
+ * LEFT JOIN
+ * - LEFT JOIN은 왼쪽 테이블을 기준으로 오른쪽 테이블을 연결하는 방식이다.
+ *
+ * COALESCE
+ * - COALESCE는 NULL을 다른 값으로 대체하는 함수이다.
+ * - COALESCE(값1, 값2, 값3, ...);
+ * - 값1이 NULL이 아니면 값1을 반환하고, NULL이면 값2를 반환한다.
+ */
 export const getUser = async requestData => {
     const { userId } = requestData;
 
-    /**
-     * LEFT JOIN
-     * - LEFT JOIN은 왼쪽 테이블을 기준으로 오른쪽 테이블을 연결하는 방식이다.
-     *
-     * COALESCE
-     * - COALESCE는 NULL을 다른 값으로 대체하는 함수이다.
-     * - COALESCE(값1, 값2, 값3, ...);
-     * - 값1이 NULL이 아니면 값1을 반환하고, NULL이면 값2를 반환한다.
-     */
+    const sql = `
+    SELECT user_table.*, COALESCE(file_table.file_path, '/public/image/profile/default.jpg') AS file_path
+    FROM user_table
+    LEFT JOIN file_table ON user_table.file_id = file_table.file_id
+    WHERE user_table.user_id = ? AND user_table.deleted_at IS NULL;
+    `;
+    const userData = await dbConnect.query(sql, [userId]);
+
+    return userData.length ? userData[0] : null;
+};
+/*
+legacy code
+export const getUser = async requestData => {
+    const { userId } = requestData;
+
     const sql = `
     SELECT user_table.*, COALESCE(file_table.file_path, '/public/image/profile/default.jpg') AS file_path
     FROM user_table
@@ -126,8 +196,53 @@ export const getUser = async requestData => {
     };
     return results;
 };
+*/
 
 // 회원정보 수정
+export const updateUser = async requestData => {
+    const { userId, nickname } = requestData;
+
+    const updateUserSql = `
+    UPDATE user_table
+    SET nickname = ?
+    WHERE user_id = ? AND deleted_at IS NULL;
+    `;
+    const updateUserResults = await dbConnect.query(updateUserSql, [
+        nickname,
+        userId,
+    ]);
+
+    return updateUserResults || null;
+};
+
+export const updateUserProfileImage = async (requestData, response) => {
+    const { userId, profileImagePath } = requestData;
+
+    const profileImageSql = `
+    INSERT INTO file_table
+    (user_id, file_path, file_category)
+    VALUES (?, ?, 1);
+    `;
+    const profileImageResults = await dbConnect.query(profileImageSql, [
+        userId,
+        profileImagePath,
+    ]);
+
+    const userProfileSql = `
+    UPDATE user_table
+    SET file_id = ?
+    WHERE user_id = ? AND deleted_at IS NULL;
+    `;
+    const userProfileResults = await dbConnect.query(
+        userProfileSql,
+        [parseInt(profileImageResults.insertId, 10), userId],
+        response,
+    );
+
+    return userProfileResults;
+};
+/*
+legacy code
 export const updateUser = async (requestData, response) => {
     const { userId, nickname, profileImagePath } = requestData;
 
@@ -167,25 +282,30 @@ export const updateUser = async (requestData, response) => {
     );
 
     return userProfileResults;
-};
+}; */
 
 // 비밀번호 변경
 export const changePassword = async requestData => {
     const { userId, password } = requestData;
 
     const sql = `
-    UPDATE user_table
-    SET password = ?
-    WHERE user_id = ?;
+        UPDATE user_table
+        SET password = ?
+        WHERE user_id = ?;
     `;
-    const results = await dbConnect.query(sql, [password, userId]);
 
-    if (!results) return null;
-
-    return results;
+    try {
+        return await dbConnect.query(sql, [password, userId]);
+    } catch (error) {
+        console.error('Database error:', error);
+        throw new Error('Database operation failed');
+    }
 };
 
 // 회원탈퇴
+
+/*
+legacy code
 export const softDeleteUser = async requestData => {
     const { userId } = requestData;
     let sql = `SELECT * FROM user_table WHERE user_id = ? AND deleted_at IS NULL;`;
@@ -200,8 +320,27 @@ export const softDeleteUser = async requestData => {
     await dbConnect.query(sql, [userId]);
 
     return results[0];
+}; */
+export const softDeleteUserById = async userId => {
+    const sql = 'UPDATE user_table SET deleted_at = now() WHERE user_id = ?';
+    const results = await dbConnect.query(sql, [userId]);
+    return results.affectedRows ? results : null;
 };
 
+export const updateUserSession = async requestData => {
+    const { userId, sessionId } = requestData;
+
+    const sql = `
+        UPDATE user_table
+        SET session_id = ?
+        WHERE user_id = ?
+    `;
+    const results = await dbConnect.query(sql, [sessionId, userId]);
+
+    return results.affectedRows ? results : null;
+};
+/*
+legacy code
 export const updateUserSession = async requestData => {
     const { userId, sessionId } = requestData;
 
@@ -216,7 +355,27 @@ export const updateUserSession = async requestData => {
 
     return results;
 };
+*/
 
+export const destroyUserSession = async requestData => {
+    const { userId } = requestData;
+
+    const sql = `
+    UPDATE user_table
+    SET session_id = NULL
+    WHERE user_id = ? AND session_id IS NOT NULL;
+    `;
+
+    const results = await dbConnect.query(sql, [userId]);
+
+    if (!results.affectedRows) {
+        throw new Error('USER_SESSION_DESTROY_ERROR');
+    }
+
+    return results;
+};
+/*
+legacy code
 export const destroyUserSession = async requestData => {
     const { userId } = requestData;
 
@@ -233,15 +392,13 @@ export const destroyUserSession = async requestData => {
     }
 
     return results;
-};
+}; */
 
 export const checkEmail = async requestData => {
     const { email } = requestData;
 
     const sql = `SELECT email FROM user_table WHERE email = ?;`;
     const results = await dbConnect.query(sql, [email]);
-
-    if (!results || results.length === 0) return null;
 
     return results;
 };

@@ -35,6 +35,7 @@ const query = async (queryString, params = []) => {
         const connection = await pool.getConnection();
         try {
             const [rows] = await connection.execute(queryString, params);
+            console.log(params);
             connection.release();
             return rows;
         } catch (error) {

@@ -52,14 +52,14 @@ app.use(limiter);
 app.use('/', routes);
 
 // // 서버 에러 500 응답
-// app.use((error, request, response) => {
-//     response.status(error.status || 500);
-//     response.send({
-//         error: {
-//             message: error.message,
-//         },
-//     });
-// });
+app.use((error, request, response) => {
+    response.status(error.status || 500);
+    response.send({
+        error: {
+            message: error.message,
+        },
+    });
+});
 
 // 요청 타임아웃 설정 (예: 5초)
 app.use(timeout('5s'));
@@ -75,7 +75,6 @@ app.use((request, response, next) => {
         });
 });
 
-// 서버 시작하면 전체 유저 데이터 session_id NULL로 초기화
 // 서버 시작하면 전체 유저 데이터 session_id NULL로 초기화
 const initSessionId = async () => {
     const sql = 'UPDATE user_table SET session_id = NULL;';
