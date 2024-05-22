@@ -40,9 +40,9 @@ export const writeComment = async (request, response) => {
         const userId = request.headers.userid;
 
         const requestData = {
-            postId: mysql.escape(postId),
-            userId: mysql.escape(userId),
-            commentContent: mysql.escape(commentContent),
+            postId,
+            userId,
+            commentContent,
         };
         const results = await commentModel.writeComment(requestData, response);
 
@@ -88,10 +88,10 @@ export const getComments = async (request, response) => {
         const postId = request.params.post_id;
 
         const requestData = {
-            postId: mysql.escape(postId),
+            postId,
         };
         const results = await commentModel.getComments(requestData, response);
-        console.log(results);
+
         if (!results)
             return response.status(STATUS_CODES.NOT_FOUND).json({
                 status: STATUS_CODES.NOT_FOUND,
@@ -116,41 +116,42 @@ export const getComments = async (request, response) => {
 
 // 댓글 수정
 export const updateComment = async (request, response) => {
-    if (!request.params.post_id)
-        return response.status(STATUS_CODES.BAD_REQUEST).json({
-            status: STATUS_CODES.BAD_REQUEST,
-            message: MESSAGES.POST.INVALID_POST_ID,
-            data: null,
-        });
-    if (!request.params.comment_id)
-        return response.status(STATUS_CODES.BAD_REQUEST).json({
-            status: STATUS_CODES.BAD_REQUEST,
-            message: MESSAGES.COMMENT.INVALID_COMMENT_ID,
-            data: null,
-        });
-    if (!request.body.commentContent)
-        return response.status(STATUS_CODES.BAD_REQUEST).json({
-            status: STATUS_CODES.BAD_REQUEST,
-            message: MESSAGES.COMMENT.INVALID_COMMENT_CONTENT,
-            data: null,
-        });
-    if (request.body.commentContent.length > MAX_COMMENT_LENGTH)
-        return response.status(STATUS_CODES.BAD_REQUEST).json({
-            status: STATUS_CODES.BAD_REQUEST,
-            message: MESSAGES.COMMENT.INVALID_COMMENT_CONTENT_LENGTH,
-            data: null,
-        });
     try {
+        if (!request.params.post_id)
+            return response.status(STATUS_CODES.BAD_REQUEST).json({
+                status: STATUS_CODES.BAD_REQUEST,
+                message: MESSAGES.POST.INVALID_POST_ID,
+                data: null,
+            });
+        if (!request.params.comment_id)
+            return response.status(STATUS_CODES.BAD_REQUEST).json({
+                status: STATUS_CODES.BAD_REQUEST,
+                message: MESSAGES.COMMENT.INVALID_COMMENT_ID,
+                data: null,
+            });
+        if (!request.body.commentContent)
+            return response.status(STATUS_CODES.BAD_REQUEST).json({
+                status: STATUS_CODES.BAD_REQUEST,
+                message: MESSAGES.COMMENT.INVALID_COMMENT_CONTENT,
+                data: null,
+            });
+        if (request.body.commentContent.length > MAX_COMMENT_LENGTH)
+            return response.status(STATUS_CODES.BAD_REQUEST).json({
+                status: STATUS_CODES.BAD_REQUEST,
+                message: MESSAGES.COMMENT.INVALID_COMMENT_CONTENT_LENGTH,
+                data: null,
+            });
+
         const postId = request.params.post_id;
         const commentId = request.params.comment_id;
         const userId = request.headers.userid;
         const { commentContent } = request.body;
 
         const requestData = {
-            postId: mysql.escape(postId),
-            commentId: mysql.escape(commentId),
-            userId: mysql.escape(userId),
-            commentContent: mysql.escape(commentContent),
+            postId,
+            commentId,
+            userId,
+            commentContent,
         };
         const results = await commentModel.updateComment(requestData, response);
 
@@ -205,9 +206,9 @@ export const softDeleteComment = async (request, response) => {
         const userId = request.headers.userid;
 
         const requestData = {
-            postId: mysql.escape(postId),
-            commentId: mysql.escape(commentId),
-            userId: mysql.escape(userId),
+            postId,
+            commentId,
+            userId,
         };
         const results = await commentModel.softDeleteComment(
             requestData,
