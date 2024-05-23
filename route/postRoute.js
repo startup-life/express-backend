@@ -4,7 +4,6 @@ import isLoggedIn from '../util/authUtil.js';
 
 const router = express.Router();
 
-// 업데이트 된 라우트
 router.get('/posts', isLoggedIn, postController.getPosts);
 router.get('/posts/:post_id', isLoggedIn, postController.getPost);
 router.post('/posts', isLoggedIn, postController.writePost);

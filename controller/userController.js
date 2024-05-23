@@ -2,20 +2,8 @@ import mysql from 'mysql2';
 import bcrypt from 'bcrypt';
 import * as userModel from '../model/userModel.js';
 import { validEmail, validNickname, validPassword } from '../util/validUtil.js';
-import { STATUS_CODES, MESSAGES } from '../util/responseConstants.js';
 
-const SALTROUNDS = 10;
-
-/**
- * 회원가입
- * 프로필 사진 업로드
- * 로그인
- * 유저 정보 가져오기
- * 회원정보 수정
- * 비밀번호 변경
- * 회원탈퇴
- * 로그아웃
- */
+const saltRounds = 10;
 
 // 회원가입
 export const signupUser = async (request, response) => {
@@ -28,27 +16,27 @@ export const signupUser = async (request, response) => {
         const passwordValid = validPassword(request.body.password);
 
         if (!request.body.email || !emailValid)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.USER.INVALID_USER_EMAIL,
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_email',
                 data: null,
             });
         if (!request.body.nickname || !nicknameValid)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.USER.INVALID_USER_NICKNAME,
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_nickname',
                 data: null,
             });
         if (!request.body.password || !passwordValid)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.USER.INVALID_USER_PASSWORD,
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_password',
                 data: null,
             });
 
         const { email, password, nickname, profileImagePath } = request.body;
 
-        const hashedPassword = await bcrypt.hash(password, SALTROUNDS);
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
 
         const reqSignupData = {
             email: mysql.escape(email),
@@ -64,6 +52,13 @@ export const signupUser = async (request, response) => {
             response,
         );
 
+        if (resSignupData === null)
+            return response.status(400).json({
+                status: 400,
+                message: 'already_exist_email',
+                data: null,
+            });
+
         if (profileImagePath !== null) {
             const reqProfileImageData = {
                 userId: resSignupData,
@@ -77,9 +72,9 @@ export const signupUser = async (request, response) => {
             reqSignupData.file_id = resProfileImageData.insertId;
         }
 
-        return response.status(STATUS_CODES.CREATED).json({
-            status: STATUS_CODES.CREATED,
-            message: MESSAGES.USER.SIGNUP_SUCCESS,
+        return response.status(201).json({
+            status: 201,
+            message: 'register_success',
             data: {
                 userId: resSignupData.insertId,
                 profile_image_id: reqSignupData.file_id,
@@ -87,9 +82,9 @@ export const signupUser = async (request, response) => {
         });
     } catch (error) {
         console.log(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
+        return response.status(500).json({
+            status: 500,
+            message: 'Internal Server Error',
             data: null,
         });
     }
@@ -99,19 +94,19 @@ export const signupUser = async (request, response) => {
 export const uploadProfileImage = async (request, response) => {
     try {
         if (request.body.profileImage === undefined)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
+            return response.status(400).json({
+                status: 400,
                 message: 'invalid_profile_image',
                 data: null,
             });
-        if (!request.params.userId)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.USER.INVALID_USER_ID,
+        if (!request.params.user_id)
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_user_id',
                 data: null,
             });
 
-        const { userId } = request.params;
+        const userId = request.params.user_id;
         const { profileImage } = request.body;
 
         const requestData = {
@@ -119,28 +114,24 @@ export const uploadProfileImage = async (request, response) => {
             profileImage: mysql.escape(profileImage),
         };
 
-        const responseData = await userModel.uploadProfileImage(
+        const resData = await userModel.uploadProfileImage(
             requestData,
             response,
         );
 
-        if (responseData === null)
-            return response.status(STATUS_CODES.NOT_FOUND).json({
-                status: STATUS_CODES.NOT_FOUND,
-                message: MESSAGES.USER.NOT_FOUND_USER,
+        if (resData === null)
+            return response.status(404).json({
+                status: 404,
+                message: 'not_found_user',
                 data: null,
             });
 
-        return response.status(STATUS_CODES.CREATED).json({
-            status: STATUS_CODES.CREATED,
-            message: MESSAGES.FILE.FILE_UPLOAD_SUCCESS,
-            data: null,
-        });
+        return response.status(204).end();
     } catch (error) {
         console.log(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
+        return response.status(500).json({
+            status: 500,
+            message: 'Internal Server Error',
             data: null,
         });
     }
@@ -150,15 +141,15 @@ export const uploadProfileImage = async (request, response) => {
 export const loginUser = async (request, response) => {
     try {
         if (!request.body.email)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.USER.INVALID_USER_EMAIL,
+            return response.status(400).json({
+                status: 400,
+                message: 'required_email',
                 data: null,
             });
         if (!request.body.password)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.USER.INVALID_USER_PASSWORD,
+            return response.status(400).json({
+                status: 400,
+                message: 'required_password',
                 data: null,
             });
 
@@ -170,33 +161,31 @@ export const loginUser = async (request, response) => {
         };
         const responseData = await userModel.loginUser(requestData, response);
 
-        if (!responseData || responseData === null) {
+        if (!responseData || responseData === null)
             return response.status(401).json({
                 status: 401,
-                message: MESSAGES.USER.INVALID_EMAIL_OR_PASSWORD,
+                message: 'login_failed',
                 data: null,
             });
-        }
 
         responseData.sessionId = request.sessionID;
 
-        const reqSessionData = {
-            session: mysql.escape(request.sessionID),
+        const requestSessionData = {
+            session: mysql.escape(responseData.sessionId),
             userId: mysql.escape(responseData.userId),
         };
+        await userModel.updateUserSession(requestSessionData, response);
 
-        await userModel.updateUserSession(reqSessionData, response);
-
-        return response.status(STATUS_CODES.OK).json({
-            status: STATUS_CODES.OK,
-            message: MESSAGES.USER.LOGIN_SUCCESS,
+        return response.status(200).json({
+            status: 200,
+            message: 'login_success',
             data: responseData,
         });
     } catch (error) {
         console.log(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
+        return response.status(500).json({
+            status: 500,
+            message: 'Internal Server Error',
             data: null,
         });
     }
@@ -206,9 +195,9 @@ export const loginUser = async (request, response) => {
 export const getUser = async (request, response) => {
     try {
         if (!request.params.user_id)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.USER.INVALID_USER_ID,
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_user_id',
                 data: null,
             });
         const userId = request.params.user_id;
@@ -216,21 +205,21 @@ export const getUser = async (request, response) => {
         const requestData = {
             userId: mysql.escape(userId),
         };
-        const responseData = await userModel.getUser(requestData, response);
+        const resData = await userModel.getUser(requestData, response);
 
-        if (responseData === null)
-            return response.status(STATUS_CODES.NOT_FOUND).json({
-                status: STATUS_CODES.NOT_FOUND,
-                message: MESSAGES.USER.NOT_FOUND_USER,
+        if (resData === null)
+            return response.status(404).json({
+                status: 404,
+                message: 'not_found_user',
                 data: null,
             });
 
-        return response.status(STATUS_CODES.OK).json(responseData);
+        return response.status(200).json(resData);
     } catch (error) {
         console.log(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
+        return response.status(500).json({
+            status: 500,
+            message: 'Internal Server Error',
             data: null,
         });
     }
@@ -240,15 +229,15 @@ export const getUser = async (request, response) => {
 export const updateUser = async (request, response) => {
     try {
         if (!request.params.user_id)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.USER.INVALID_USER_ID,
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_user_id',
                 data: null,
             });
         if (!request.body.nickname)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.USER.INVALID_USER_NICKNAME,
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_nickname',
                 data: null,
             });
 
@@ -263,25 +252,25 @@ export const updateUser = async (request, response) => {
         if (profileImagePath !== undefined)
             requestData.profileImagePath = mysql.escape(profileImagePath);
 
-        const responseData = await userModel.updateUser(requestData, response);
+        const resData = await userModel.updateUser(requestData, response);
 
-        if (responseData === null)
-            return response.status(STATUS_CODES.NOT_FOUND).json({
-                status: STATUS_CODES.NOT_FOUND,
-                message: MESSAGES.USER.NOT_FOUND_USER,
+        if (resData === null)
+            return response.status(404).json({
+                status: 404,
+                message: 'not_found_user',
                 data: null,
             });
 
-        return response.status(STATUS_CODES.CREATED).json({
-            status: STATUS_CODES.CREATED,
-            message: MESSAGES.USER.UPDATE_USER_SUCCESS,
+        return response.status(201).json({
+            status: 201,
+            message: 'update_user_data_success',
             data: null,
         });
     } catch (error) {
         console.log(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
+        return response.status(500).json({
+            status: 500,
+            message: 'Internal Server Error',
             data: null,
         });
     }
@@ -291,9 +280,9 @@ export const updateUser = async (request, response) => {
 export const changePassword = async (request, response) => {
     try {
         if (!request.params.user_id)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.USER.INVALID_USER_ID,
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_user_id',
                 data: null,
             });
 
@@ -305,41 +294,38 @@ export const changePassword = async (request, response) => {
             /^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-])(?=.*[0-9]).{8,16}$/;
 
         if (!password || !passwordRegex.test(password)) {
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.USER.INVALID_USER_PASSWORD,
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_password',
                 data: null,
             });
         }
 
-        const hashedPassword = await bcrypt.hash(password, SALTROUNDS);
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
         const requestData = {
             userId: mysql.escape(userId),
             password: mysql.escape(hashedPassword),
         };
 
-        const responseData = await userModel.changePassword(
-            requestData,
-            response,
-        );
-        if (responseData === null) {
-            return response.status(STATUS_CODES.NOT_FOUND).json({
-                status: STATUS_CODES.NOT_FOUND,
-                message: MESSAGES.USER.NOT_FOUND_USER,
+        const resData = await userModel.changePassword(requestData, response);
+        if (resData === null) {
+            return response.status(404).json({
+                status: 404,
+                message: 'not_found_user',
                 data: null,
             });
         }
 
-        return response.status(STATUS_CODES.CREATED).json({
-            status: STATUS_CODES.CREATED,
-            message: MESSAGES.USER.CHANGE_PASSWORD_SUCCESS,
+        return response.status(201).json({
+            status: 201,
+            message: 'change_user_password_success',
             data: null,
         });
     } catch (error) {
         console.log(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
+        return response.status(500).json({
+            status: 500,
+            message: 'Internal Server Error',
             data: null,
         });
     }
@@ -349,9 +335,9 @@ export const changePassword = async (request, response) => {
 export const softDeleteUser = async (request, response) => {
     try {
         if (!request.params.user_id)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.USER.INVALID_USER_ID,
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_user_id',
                 data: null,
             });
 
@@ -360,33 +346,31 @@ export const softDeleteUser = async (request, response) => {
         const requestData = {
             userId: mysql.escape(userId),
         };
-        const responseData = await userModel.softDeleteUser(
-            requestData,
-            response,
-        );
+        const resData = await userModel.softDeleteUser(requestData, response);
 
-        if (responseData === null)
-            return response.status(STATUS_CODES.NOT_FOUND).json({
-                status: STATUS_CODES.NOT_FOUND,
-                message: MESSAGES.USER.NOT_FOUND_USER,
+        if (resData === null)
+            return response.status(404).json({
+                status: 404,
+                message: 'not_found_user',
                 data: null,
             });
 
-        return response.status(STATUS_CODES.OK).json({
-            status: STATUS_CODES.OK,
-            message: MESSAGES.USER.DELETE_USER_SUCCESS,
+        return response.status(200).json({
+            status: 200,
+            message: 'delete_user_data_success',
             data: null,
         });
     } catch (error) {
         console.log(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
+        return response.status(500).json({
+            status: 500,
+            message: 'Internal Server Error',
             data: null,
         });
     }
 };
 
+// 로그인 상태 체크
 export const checkAuth = async (request, response) => {
     try {
         const userId = request.headers.userid;
@@ -398,23 +382,23 @@ export const checkAuth = async (request, response) => {
         const userData = await userModel.getUser(requestData, response);
 
         if (userData === null)
-            return response.status(STATUS_CODES.NOT_FOUND).json({
-                status: STATUS_CODES.NOT_FOUND,
-                message: MESSAGES.USER.NOT_FOUND_USER,
+            return response.status(404).json({
+                status: 404,
+                message: 'not_found_user',
                 data: null,
             });
 
         console.log(userData);
 
         if (parseInt(userData.userId, 10) !== parseInt(userId, 10))
-            return response.status(STATUS_CODES.NOT_AUTHORIZED).json({
-                status: STATUS_CODES.NOT_AUTHORIZED,
-                message: MESSAGES.NOT_AUTHORIZED,
+            return response.status(401).json({
+                status: 401,
+                message: 'required_authorization',
                 data: null,
             });
 
-        return response.status(STATUS_CODES.OK).json({
-            status: STATUS_CODES.OK,
+        return response.status(200).json({
+            status: 200,
             message: null,
             data: {
                 userId,
@@ -427,9 +411,9 @@ export const checkAuth = async (request, response) => {
         });
     } catch (error) {
         console.log(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
+        return response.status(500).json({
+            status: 500,
+            message: 'Internal Server Error',
             data: null,
         });
     }
@@ -438,61 +422,16 @@ export const checkAuth = async (request, response) => {
 // 로그아웃
 export const logoutUser = async (request, response) => {
     try {
+        // query -> headers
         const userId = request.headers.userid;
-        return request.session.destroy(async error => {
+        request.session.destroy(error => {
             if (error) {
                 console.log(error);
-                return response
-                    .status(STATUS_CODES.INTERNAL_SERVER_ERROR)
-                    .json({
-                        status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-                        message: MESSAGES.INTERNAL_SERVER_ERROR,
-                        data: null,
-                    });
-            }
-
-            try {
-                const requestData = {
-                    userId,
-                };
-                await userModel.destroyUserSession(requestData);
-                return response.status(204).end();
-            } catch (userSessionError) {
-                console.log(userSessionError);
-                return response
-                    .status(STATUS_CODES.INTERNAL_SERVER_ERROR)
-                    .json({
-                        status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-                        message: MESSAGES.INTERNAL_SERVER_ERROR,
-                        data: null,
-                    });
-            }
-        });
-    } catch (logoutError) {
-        console.log(logoutError);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
-            data: null,
-        });
-    }
-};
-/*
-legacy code
-
-export const logoutUser = async (request, response) => {
-    try {
-        const userId = request.headers.userid;
-        request.session.destroy(err => {
-            if (err) {
-                console.log(err);
-                return response
-                    .status(STATUS_CODES.INTERNAL_SERVER_ERROR)
-                    .json({
-                        status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-                        message: MESSAGES.INTERNAL_SERVER_ERROR,
-                        data: null,
-                    });
+                return response.status(500).json({
+                    status: 500,
+                    message: 'internal_server_error',
+                    data: null,
+                });
             }
 
             const requestData = {
@@ -504,78 +443,57 @@ export const logoutUser = async (request, response) => {
         });
     } catch (error) {
         console.log(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
+        return response.status(500).json({
+            status: 500,
+            message: 'Internal Server Error',
             data: null,
         });
     }
 };
- */
 
 export const checkEmail = async (request, response) => {
-    try {
-        const { email } = request.query;
+    const { email } = request.query;
 
-        const requestData = {
-            email: mysql.escape(email),
-        };
+    const requestData = {
+        email: mysql.escape(email),
+    };
 
-        const responseData = await userModel.checkEmail(requestData, response);
+    const resData = await userModel.checkEmail(requestData, response);
 
-        if (responseData === null)
-            return response.status(STATUS_CODES.OK).json({
-                status: STATUS_CODES.OK,
-                message: MESSAGES.USER.AVAILABLE_EMAIL,
-                data: null,
-            });
-
-        return response.status(STATUS_CODES.BAD_REQUEST).json({
-            status: STATUS_CODES.BAD_REQUEST,
-            message: MESSAGES.USER.ALREADY_EXIST_EMAIL,
+    if (resData === null)
+        return response.status(200).json({
+            status: 200,
+            message: 'available_email',
             data: null,
         });
-    } catch (error) {
-        console.log(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
-            data: null,
-        });
-    }
+
+    return response.status(400).json({
+        status: 400,
+        message: 'already_exist_email',
+        data: null,
+    });
 };
 
+// 닉네임 체크
 export const checkNickname = async (request, response) => {
-    try {
-        const { nickname } = request.query;
+    const { nickname } = request.query;
 
-        const requestData = {
-            nickname: mysql.escape(nickname),
-        };
+    const requestData = {
+        nickname: mysql.escape(nickname),
+    };
 
-        const responseData = await userModel.checkNickname(
-            requestData,
-            response,
-        );
+    const resData = await userModel.checkNickname(requestData, response);
 
-        if (responseData === null)
-            return response.status(STATUS_CODES.OK).json({
-                status: STATUS_CODES.OK,
-                message: MESSAGES.USER.AVAILABLE_NICKNAME,
-                data: null,
-            });
-
-        return response.status(STATUS_CODES.BAD_REQUEST).json({
-            status: STATUS_CODES.BAD_REQUEST,
-            message: MESSAGES.USER.ALREADY_EXIST_NICKNAME,
+    if (resData === null)
+        return response.status(200).json({
+            status: 200,
+            message: 'available_nickname',
             data: null,
         });
-    } catch (error) {
-        console.log(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
-            data: null,
-        });
-    }
+
+    return response.status(400).json({
+        status: 400,
+        message: 'already_exist_nickname',
+        data: null,
+    });
 };

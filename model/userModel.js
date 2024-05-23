@@ -5,6 +5,11 @@ import * as dbConnect from '../database/index.js';
 export const signUpUser = async (requestData, response) => {
     const { email, password, nickname } = requestData;
 
+    const checkEmailSql = `SELECT email FROM user_table WHERE email = ${email};`;
+    const checkEmailResults = await dbConnect.query(checkEmailSql, response);
+
+    if (checkEmailResults.length !== 0) return null;
+
     const sql = `
     INSERT INTO user_table
     (email, password, nickname)
@@ -37,18 +42,14 @@ export const uploadProfileImage = async (requestData, response) => {
 
 // 로그인
 export const loginUser = async (requestData, response) => {
-    // 비밀번호 암호화 처리를 위한 부분
     const reqPassword = requestData.password.slice(1, -1);
-
     const sql = `SELECT * FROM user_table WHERE email = ${requestData.email} AND deleted_at IS NULL;`;
     const results = await dbConnect.query(sql, response);
 
     if (!results[0] || results[0] === 'undefined' || results[0] === undefined)
         return null;
 
-    // 비밀번호 검증
     const match = await bcrypt.compare(reqPassword, results[0].password);
-
     if (!match) return null;
 
     if (results[0].file_id !== null) {
@@ -167,10 +168,29 @@ export const softDeleteUser = async (requestData, response) => {
     sql = `UPDATE user_table SET deleted_at = now() WHERE user_id = ${userId};`;
     results = await dbConnect.query(sql, response);
 
-    sql = `UPDATE post_table SET deleted_at = now() WHERE user_id = ${userId};`;
-    await dbConnect.query(sql, response);
-
     return results[0];
+};
+
+export const checkEmail = async (requestData, response) => {
+    const { email } = requestData;
+
+    const sql = `SELECT email FROM user_table WHERE email = ${email};`;
+    const results = await dbConnect.query(sql, response);
+
+    if (!results || results.length === 0) return null;
+
+    return results;
+};
+
+export const checkNickname = async (requestData, response) => {
+    const { nickname } = requestData;
+
+    const sql = `SELECT nickname FROM user_table WHERE nickname = ${nickname};`;
+    const results = await dbConnect.query(sql, response);
+
+    if (!results || results.length === 0) return null;
+
+    return results;
 };
 
 export const updateUserSession = async (requestData, response) => {
@@ -202,28 +222,6 @@ export const destroyUserSession = async (requestData, response) => {
     if (!results) {
         return null;
     }
-
-    return results;
-};
-
-export const checkEmail = async (requestData, response) => {
-    const { email } = requestData;
-
-    const sql = `SELECT email FROM user_table WHERE email = ${email};`;
-    const results = await dbConnect.query(sql, response);
-
-    if (!results || results.length === 0) return null;
-
-    return results;
-};
-
-export const checkNickname = async (requestData, response) => {
-    const { nickname } = requestData;
-
-    const sql = `SELECT nickname FROM user_table WHERE nickname = ${nickname};`;
-    const results = await dbConnect.query(sql, response);
-
-    if (!results || results.length === 0) return null;
 
     return results;
 };

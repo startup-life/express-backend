@@ -3,17 +3,6 @@ import * as dbConnect from '../database/index.js';
 export const getComments = async (requestData, response) => {
     const { postId } = requestData;
 
-    // const sql = `
-    // SELECT * FROM comment_table
-    // WHERE post_id = ${postId} AND deleted_at IS NULL;
-    // `;
-    // const sql = `
-    // SELECT ct.*, ut.file_id, ft.file_path AS profileImage
-    // FROM comment_table AS ct
-    // INNER JOIN user_table AS ut ON ct.user_id = ut.user_id
-    // INNER JOIN file_table AS ft ON ut.file_id = ft.file_id
-    // WHERE ct.post_id = ${postId} AND ct.deleted_at IS NULL;
-    // `;
     const sql = `
     SELECT ct.*, ut.file_id, COALESCE(ft.file_path, '/public/image/profile/default.jpg') AS profileImage
     FROM comment_table AS ct

@@ -1,6 +1,5 @@
 import mysql from 'mysql2/promise';
 import * as postModel from '../model/postModel.js';
-import { STATUS_CODES, MESSAGES } from '../util/responseConstants.js';
 
 /**
  * 게시글 작성
@@ -10,35 +9,32 @@ import { STATUS_CODES, MESSAGES } from '../util/responseConstants.js';
  * 게시글 수정
  */
 
-const MAX_TITLE_LENGTH = 26;
-const MAX_CONTENT_LENGTH = 1500;
-
 // 게시글 작성
 export const writePost = async (request, response) => {
     try {
         if (request.attachFilePath === undefined) request.attachFilePath = null;
         if (!request.body.postTitle)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.POST.INVALID_POST_TITLE,
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_post_title',
                 data: null,
             });
-        if (request.body.postTitle.length > MAX_TITLE_LENGTH)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.POST.INVALID_POST_TITLE_LENGTH,
+        if (request.body.postTitle.length > 26)
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_post_title_length',
                 data: null,
             });
         if (!request.body.postContent)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.POST.INVALID_POST_CONTENT,
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_post_content',
                 data: null,
             });
-        if (request.body.postContent.length > MAX_CONTENT_LENGTH)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.POST.INVALID_POST_CONTENT_LENGTH,
+        if (request.body.postContent.length > 1500)
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_post_content_length',
                 data: null,
             });
 
@@ -55,9 +51,9 @@ export const writePost = async (request, response) => {
         const results = await postModel.writePlainPost(requestData, response);
 
         if (!results || results === null)
-            return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-                status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-                message: MESSAGES.INTERNAL_SERVER_ERROR,
+            return response.status(500).json({
+                status: 500,
+                message: 'failed_to_write_post',
                 data: null,
             });
 
@@ -75,16 +71,16 @@ export const writePost = async (request, response) => {
             results.filePath = resFileData;
         }
 
-        return response.status(STATUS_CODES.CREATED).json({
-            status: STATUS_CODES.CREATED,
-            message: MESSAGES.POST.WRITE_POST_SUCCESS,
+        return response.status(201).json({
+            status: 201,
+            message: 'write_post_success',
             data: results,
         });
     } catch (error) {
         console.error(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
+        return response.status(500).json({
+            status: 500,
+            message: 'internal_server_error',
             data: null,
         });
     }
@@ -94,9 +90,9 @@ export const writePost = async (request, response) => {
 export const uploadFile = async (request, response) => {
     try {
         if (!request.filePath)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.FILE.INVALID_FILE_PATH,
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_file_path',
                 data: null,
             });
 
@@ -110,22 +106,22 @@ export const uploadFile = async (request, response) => {
         const results = await postModel.uploadFile(requestData, response);
 
         if (!results || results === null)
-            return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-                status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-                message: MESSAGES.INTERNAL_SERVER_ERROR,
+            return response.status(500).json({
+                status: 500,
+                message: 'internal_server_error',
                 data: null,
             });
 
-        return response.status(STATUS_CODES.CREATED).json({
-            status: STATUS_CODES.CREATED,
+        return response.status(201).json({
+            status: 201,
             message: null,
             data: results,
         });
     } catch (error) {
         console.error(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
+        return response.status(500).json({
+            status: 500,
+            message: 'internal_server_error',
             data: null,
         });
     }
@@ -135,9 +131,9 @@ export const uploadFile = async (request, response) => {
 export const getPosts = async (request, response) => {
     try {
         if (!request.query.offset || !request.query.limit)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.POST.INVALID_OFFSET_LIMIT,
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_offset_or_limit',
                 data: null,
             });
 
@@ -150,22 +146,22 @@ export const getPosts = async (request, response) => {
         const results = await postModel.getPosts(requestData, response);
 
         if (!results || results === null)
-            return response.status(STATUS_CODES.NOT_FOUND).json({
-                status: STATUS_CODES.NOT_FOUND,
-                message: MESSAGES.POST.NOT_A_SINGLE_POST,
+            return response.status(404).json({
+                status: 404,
+                message: 'not_a_single_post',
                 data: null,
             });
 
-        return response.status(STATUS_CODES.OK).json({
-            status: STATUS_CODES.OK,
+        return response.status(200).json({
+            status: 200,
             message: null,
             data: results,
         });
     } catch (error) {
         console.error(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
+        return response.status(500).json({
+            status: 500,
+            message: 'internal_server_error',
             data: null,
         });
     }
@@ -175,9 +171,9 @@ export const getPosts = async (request, response) => {
 export const getPost = async (request, response) => {
     try {
         if (!request.params.post_id)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.POST.INVALID_POST_ID,
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_post_id',
                 data: null,
             });
 
@@ -189,22 +185,22 @@ export const getPost = async (request, response) => {
         const results = await postModel.getPost(requestData, response);
 
         if (!results || results === null)
-            return response.status(STATUS_CODES.NOT_FOUND).json({
-                status: STATUS_CODES.NOT_FOUND,
-                message: MESSAGES.POST.NOT_A_SINGLE_POST,
+            return response.status(404).json({
+                status: 404,
+                message: 'not_a_single_post',
                 data: null,
             });
 
-        return response.status(STATUS_CODES.OK).json({
-            status: STATUS_CODES.OK,
+        return response.status(200).json({
+            status: 200,
             message: null,
             data: results,
         });
     } catch (error) {
         console.error(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
+        return response.status(500).json({
+            status: 500,
+            message: 'internal_server_error',
             data: null,
         });
     }
@@ -214,16 +210,16 @@ export const getPost = async (request, response) => {
 export const updatePost = async (request, response) => {
     try {
         if (!request.params.post_id)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.POST.INVALID_POST_ID,
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_post_id',
                 data: null,
             });
 
-        if (request.body.postTitle.length > MAX_TITLE_LENGTH)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.POST.INVALID_POST_TITLE_LENGTH,
+        if (request.body.postTitle.length > 26)
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_post_title_length',
                 data: null,
             });
 
@@ -244,22 +240,22 @@ export const updatePost = async (request, response) => {
         const results = await postModel.updatePost(requestData, response);
 
         if (!results || results === null)
-            return response.status(STATUS_CODES.NOT_FOUND).json({
-                status: STATUS_CODES.NOT_FOUND,
-                message: MESSAGES.POST.NOT_A_SINGLE_POST,
+            return response.status(404).json({
+                status: 404,
+                message: 'not_a_single_post',
                 data: null,
             });
 
-        return response.status(STATUS_CODES.OK).json({
-            status: STATUS_CODES.OK,
-            message: MESSAGES.POST.UPDATE_POST_SUCCESS,
+        return response.status(200).json({
+            status: 200,
+            message: 'update_post_success',
             data: results,
         });
     } catch (error) {
         console.error(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
+        return response.status(500).json({
+            status: 500,
+            message: 'internal_server_error',
             data: null,
         });
     }
@@ -269,9 +265,9 @@ export const updatePost = async (request, response) => {
 export const softDeletePost = async (request, response) => {
     try {
         if (!request.params.post_id)
-            return response.status(STATUS_CODES.BAD_REQUEST).json({
-                status: STATUS_CODES.BAD_REQUEST,
-                message: MESSAGES.POST.INVALID_POST_ID,
+            return response.status(400).json({
+                status: 400,
+                message: 'invalid_post_id',
                 data: null,
             });
 
@@ -283,22 +279,22 @@ export const softDeletePost = async (request, response) => {
         const results = await postModel.softDeletePost(requestData, response);
 
         if (!results || results === null)
-            return response.status(STATUS_CODES.NOT_FOUND).json({
-                status: STATUS_CODES.NOT_FOUND,
-                message: MESSAGES.POST.NOT_A_SINGLE_POST,
+            return response.status(404).json({
+                status: 404,
+                message: 'not_a_single_post',
                 data: null,
             });
 
-        return response.status(STATUS_CODES.OK).json({
-            status: STATUS_CODES.OK,
-            message: MESSAGES.POST.DELETE_POST_SUCCESS,
+        return response.status(200).json({
+            status: 200,
+            message: 'delete_post_success',
             data: null,
         });
     } catch (error) {
         console.error(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
+        return response.status(500).json({
+            status: 500,
+            message: 'internal_server_error',
             data: null,
         });
     }

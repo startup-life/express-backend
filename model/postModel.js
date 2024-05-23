@@ -1,48 +1,8 @@
 import * as dbConnect from '../database/index.js';
 
-/**
- * 게시글 목록 조회
- * 게시글 상세 조회
- * 게시글 작성
- * 파일 업로드
- */
-
 // 게시글 목록 조회
 export const getPosts = async (requestData, response) => {
     const { offset, limit } = requestData;
-    // const sql = `
-    // SELECT
-    //     post_table.post_id,
-    //     post_table.post_title,
-    //     post_table.post_content,
-    //     post_table.file_id,
-    //     post_table.user_id,
-    //     post_table.nickname,
-    //     post_table.created_at,
-    //     post_table.updated_at,
-    //     post_table.deleted_at,
-    //     CASE
-    //         WHEN post_table.\`like\` >= 1000000 THEN CONCAT(ROUND(post_table.\`like\` / 1000000, 1), 'M')
-    //         WHEN post_table.\`like\` >= 1000 THEN CONCAT(ROUND(post_table.\`like\` / 1000, 1), 'K')
-    //         ELSE post_table.\`like\`
-    //     END as \`like\`,
-    //     CASE
-    //         WHEN post_table.comment_count >= 1000000 THEN CONCAT(ROUND(post_table.comment_count / 1000000, 1), 'M')
-    //         WHEN post_table.comment_count >= 1000 THEN CONCAT(ROUND(post_table.comment_count / 1000, 1), 'K')
-    //         ELSE post_table.comment_count
-    //     END as comment_count,
-    //     CASE
-    //         WHEN post_table.hits >= 1000000 THEN CONCAT(ROUND(post_table.hits / 1000000, 1), 'M')
-    //         WHEN post_table.hits >= 1000 THEN CONCAT(ROUND(post_table.hits / 1000, 1), 'K')
-    //         ELSE post_table.hits
-    //     END as hits,
-    //     COALESCE(file_table.file_path, '/public/image/profile/default.jpg') AS profileImagePath
-    // FROM post_table
-    //         LEFT JOIN user_table ON post_table.user_id = user_table.user_id
-    //         LEFT JOIN file_table ON user_table.file_id = file_table.file_id
-    // WHERE post_table.deleted_at IS NULL
-    // LIMIT ${limit} OFFSET ${offset};
-    // `;
     const sql = `
     SELECT
         post_table.post_id,
@@ -86,13 +46,6 @@ export const getPosts = async (requestData, response) => {
 // 게시글 상세 조회
 export const getPost = async (requestData, response) => {
     const { postId } = requestData;
-
-    // const sql = `
-    // SELECT post_table.*, COALESCE(file_table.file_path, NULL) AS filePath
-    // FROM post_table
-    // LEFT JOIN file_table ON post_table.file_id = file_table.file_id
-    // WHERE post_table.post_id = ${postId} AND post_table.deleted_at IS NULL;
-    // `;
 
     const sql = `
     SELECT 
