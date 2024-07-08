@@ -52,87 +52,56 @@ exports.loginUser = async (request, response, next) => {
 };
 
 // 회원가입
-exports.signupUser = async (request, response) => {
+exports.signupUser = async (request, response, next) => {
     try {
-        if (request.body.profileImagePath === undefined)
-            request.body.profileImagePath = null;
-
-        const emailValid = validEmail(request.body.email);
-        const nicknameValid = validNickname(request.body.nickname);
-        const passwordValid = validPassword(request.body.password);
-
-        if (!request.body.email || !emailValid)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_email',
-                data: null,
-            });
-        if (!request.body.nickname || !nicknameValid)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_nickname',
-                data: null,
-            });
-        if (!request.body.password || !passwordValid)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_password',
-                data: null,
-            });
-
         const { email, password, nickname, profileImagePath } = request.body;
+
+        if (!email || !validEmail(email)) {
+            const error = new Error(STATUS_MESSAGE.INVALID_EMAIL);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+        if (!nickname || !validNickname(nickname)) {
+            const error = new Error(STATUS_MESSAGE.INVALID_NICKNAME);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+        if (!password || !validPassword(password)) {
+            const error = new Error(STATUS_MESSAGE.INVALID_PASSWORD);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
 
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
         const reqSignupData = {
-            email: mysql.escape(email),
-            password: mysql.escape(hashedPassword),
-            nickname: mysql.escape(nickname),
-            profileImagePath:
-                profileImagePath === null
-                    ? null
-                    : mysql.escape(profileImagePath),
+            email,
+            password: hashedPassword,
+            nickname,
+            profileImagePath: profileImagePath || null,
         };
-        const resSignupData = await userModel.signUpUser(
-            reqSignupData,
-            response,
-        );
 
-        if (resSignupData === null)
-            return response.status(400).json({
-                status: 400,
-                message: 'already_exist_email',
-                data: null,
-            });
+        const resSignupData = await userModel.signUpUser(reqSignupData);
 
-        if (profileImagePath !== null) {
-            const reqProfileImageData = {
-                userId: resSignupData,
-                profileImagePath: mysql.escape(profileImagePath),
-            };
+        if (resSignupData === 'already_exist_email') {
+            const error = new Error(STATUS_MESSAGE.ALREADY_EXIST_EMAIL);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
 
-            const resProfileImageData = await userModel.uploadProfileImage(
-                reqProfileImageData,
-                response,
-            );
-            reqSignupData.file_id = resProfileImageData.insertId;
+        if (resSignupData === null) {
+            const error = new Error(STATUS_MESSAGE.SIGNUP_FAILED);
+            error.status = STATUS_CODE.INTERNAL_SERVER_ERROR;
+            throw error;
         }
 
         return response.status(201).json({
-            status: 201,
-            message: 'register_success',
-            data: {
-                userId: resSignupData.insertId,
-                profile_image_id: reqSignupData.file_id,
-            },
+            status: STATUS_CODE.CREATED,
+            message: STATUS_MESSAGE.SIGNUP_SUCCESS,
+            data: resSignupData,
         });
     } catch (error) {
-        console.log(error);
-        return response.status(500).json({
-            status: 500,
-            message: 'Internal Server Error',
-            data: null,
-        });
+        next(error);
     }
 };
 

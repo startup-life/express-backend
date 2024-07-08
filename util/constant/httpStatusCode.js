@@ -15,6 +15,12 @@ const STATUS_MESSAGE = {
     REQUIRED_PASSWORD: 'required_password',
     INVALID_EMAIL_OR_PASSWORD: 'invalid_email_or_password',
     LOGIN_SUCCESS: 'login_success',
+    INVALID_EMAIL: 'invaild_email',
+    INVALID_NICKNAME: 'invalid_nickname',
+    INVALID_PASSWORD: 'invalid_password',
+    ALREADY_EXIST_EMAIL: 'already_exist_email',
+    SIGNUP_FAILED: 'signup_failed',
+    SIGNUP_SUCCESS: 'signup_success',
     INTERNAL_SERVER_ERROR: 'internal_server_error',
 };
 

@@ -4,8 +4,7 @@ const dbConnect = require('../database/index.js');
 // 로그인
 exports.loginUser = async (requestData, response) => {
     const { email, password, sessionId } = requestData;
-    // const sql = `SELECT * FROM user_table WHERE email = ${email} AND deleted_at IS NULL;`;
-    // const results = await dbConnect.query(sql, response);
+
     const sql = `SELECT * FROM user_table WHERE email = ? AND deleted_at IS NULL;`;
     const results = await dbConnect.query(sql, [email], response);
 
@@ -16,8 +15,6 @@ exports.loginUser = async (requestData, response) => {
     if (!match) return null;
 
     if (results[0].file_id !== null) {
-        // const profileSql = `SELECT file_path FROM file_table WHERE file_id = ${results[0].file_id} AND deleted_at IS NULL AND file_category = 1;`;
-        // const profileResults = await dbConnect.query(profileSql, response);
         const profileSql = `SELECT file_path FROM file_table WHERE file_id = ? AND deleted_at IS NULL AND file_category = 1;`;
         const profileResults = await dbConnect.query(
             profileSql,
@@ -48,42 +45,56 @@ exports.loginUser = async (requestData, response) => {
 };
 
 // 회원가입
-exports.signUpUser = async (requestData, response) => {
-    const { email, password, nickname } = requestData;
+exports.signUpUser = async requestData => {
+    const { email, password, nickname, profileImagePath } = requestData;
 
-    const checkEmailSql = `SELECT email FROM user_table WHERE email = ${email};`;
-    const checkEmailResults = await dbConnect.query(checkEmailSql, response);
+    const checkEmailSql = `SELECT email FROM user_table WHERE email = ?;`;
+    const checkEmailResults = await dbConnect.query(checkEmailSql, [email]);
 
-    if (checkEmailResults.length !== 0) return null;
+    if (checkEmailResults.length !== 0) return 'already_exist_email';
 
-    const sql = `
-    INSERT INTO user_table
-    (email, password, nickname)
-    VALUES (${email}, ${password}, ${nickname});
+    const insertUserSql = `
+    INSERT INTO user_table (email, password, nickname)
+    VALUES (?, ?, ?);
     `;
+    const userResults = await dbConnect.query(insertUserSql, [
+        email,
+        password,
+        nickname,
+    ]);
 
-    const results = await dbConnect.query(sql, response);
-    return results.insertId;
-};
+    if (!userResults.insertId) return null;
 
-exports.uploadProfileImage = async (requestData, response) => {
-    const { userId, profileImagePath } = requestData;
+    let profileImageId = null;
+    if (profileImagePath) {
+        const insertFileSql = `
+        INSERT INTO file_table (user_id, file_path, file_category)
+        VALUES (?, ?, 1);
+        `;
+        const fileResults = await dbConnect.query(insertFileSql, [
+            userResults.insertId,
+            profileImagePath,
+        ]);
 
-    const profileImagePathSql = `
-    INSERT INTO file_table
-    (user_id, file_path, file_category)
-    VALUES (${userId}, ${profileImagePath}, 1);
-    `;
-    const profileResults = await dbConnect.query(profileImagePathSql, response);
+        if (fileResults.insertId) {
+            profileImageId = fileResults.insertId;
 
-    const userProfileSql = `
-    UPDATE user_table
-    SET file_id = ${profileResults.insertId}
-    WHERE user_id = ${userId};
-    `;
+            const updateUserSql = `
+            UPDATE user_table
+            SET file_id = ?
+            WHERE user_id = ?;
+            `;
+            await dbConnect.query(updateUserSql, [
+                profileImageId,
+                userResults.insertId,
+            ]);
+        }
+    }
 
-    const userProfileResults = await dbConnect.query(userProfileSql, response);
-    return userProfileResults.insertId;
+    return {
+        userId: userResults.insertId,
+        profileImageId: profileImageId,
+    };
 };
 
 exports.getUser = async (requestData, response) => {
