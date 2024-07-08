@@ -105,84 +105,35 @@ exports.signupUser = async (request, response, next) => {
     }
 };
 
-// 프로필 사진 업로드
-exports.uploadProfileImage = async (request, response) => {
-    try {
-        if (request.body.profileImage === undefined)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_profile_image',
-                data: null,
-            });
-        if (!request.params.user_id)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_user_id',
-                data: null,
-            });
-
-        const userId = request.params.user_id;
-        const { profileImage } = request.body;
-
-        const requestData = {
-            userId: mysql.escape(userId),
-            profileImage: mysql.escape(profileImage),
-        };
-
-        const resData = await userModel.uploadProfileImage(
-            requestData,
-            response,
-        );
-
-        if (resData === null)
-            return response.status(404).json({
-                status: 404,
-                message: 'not_found_user',
-                data: null,
-            });
-
-        return response.status(204).end();
-    } catch (error) {
-        console.log(error);
-        return response.status(500).json({
-            status: 500,
-            message: 'Internal Server Error',
-            data: null,
-        });
-    }
-};
-
 // 유저 정보 가져오기
-exports.getUser = async (request, response) => {
+exports.getUser = async (request, response, next) => {
     try {
-        if (!request.params.user_id)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_user_id',
-                data: null,
-            });
         const userId = request.params.user_id;
 
+        if (!userId) {
+            const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
         const requestData = {
-            userId: mysql.escape(userId),
+            userId, // mysql.escape 제거, 모델에서 처리
         };
-        const resData = await userModel.getUser(requestData, response);
+        const responseData = await userModel.getUser(requestData);
 
-        if (resData === null)
-            return response.status(404).json({
-                status: 404,
-                message: 'not_found_user',
-                data: null,
-            });
+        if (responseData === null) {
+            const error = new Error(STATUS_MESSAGE.NOT_FOUND_USER);
+            error.status = STATUS_CODE.NOT_FOUND;
+            throw error;
+        }
 
-        return response.status(200).json(resData);
-    } catch (error) {
-        console.log(error);
-        return response.status(500).json({
-            status: 500,
-            message: 'Internal Server Error',
-            data: null,
+        return response.status(200).json({
+            status: 200,
+            message: null,
+            data: responseData,
         });
+    } catch (error) {
+        next(error);
     }
 };
 

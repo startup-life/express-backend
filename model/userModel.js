@@ -97,25 +97,20 @@ exports.signUpUser = async requestData => {
     };
 };
 
-exports.getUser = async (requestData, response) => {
+exports.getUser = async requestData => {
     const { userId } = requestData;
 
-    /**
-     * LEFT JOIN
-     * - LEFT JOIN은 왼쪽 테이블을 기준으로 오른쪽 테이블을 연결하는 방식이다.
-     *
-     * COALESCE
-     * - COALESCE는 NULL을 다른 값으로 대체하는 함수이다.
-     * - COALESCE(값1, 값2, 값3, ...);
-     * - 값1이 NULL이 아니면 값1을 반환하고, NULL이면 값2를 반환한다.
-     */
     const sql = `
     SELECT user_table.*, COALESCE(file_table.file_path, '/public/image/profile/default.jpg') AS file_path
     FROM user_table
     LEFT JOIN file_table ON user_table.file_id = file_table.file_id
-    WHERE user_table.user_id = ${userId} AND user_table.deleted_at IS NULL;
+    WHERE user_table.user_id = ? AND user_table.deleted_at IS NULL;
     `;
-    const userData = await dbConnect.query(sql, response);
+    const userData = await dbConnect.query(sql, [userId]);
+
+    if (userData.length === 0) {
+        return null;
+    }
 
     const results = {
         userId: userData[0].user_id,
