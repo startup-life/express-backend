@@ -1,6 +1,7 @@
 const STATUS_CODE = {
     OK: 200,
     CREATED: 201,
+    END: 204,
     BAD_REQUEST: 400,
     UNAUTHORIZED: 401,
     FORBIDDEN: 403,
@@ -24,10 +25,17 @@ const STATUS_MESSAGE = {
     ALREADY_EXIST_EMAIL: 'already_exist_email',
     NOT_FOUND_USER: 'not_found_user',
 
+    AVAILVABLE_EMAIL: 'available_email',
+    AVAILABLE_NICKNAME: 'available_nickname',
+
     SIGNUP_FAILED: 'signup_failed',
+    UPDATE_PROFILE_IMAGE_FAILED: 'update_profile_image_failed',
 
     LOGIN_SUCCESS: 'login_success',
     SIGNUP_SUCCESS: 'signup_success',
+    UPDATE_USER_DATA_SUCCESS: 'update_user_data_success',
+    CHANGE_USER_PASSWORD_SUCCESS: 'change_user_password_success',
+    DELETE_USER_DATA_SUCCESS: 'delete_user_data_success',
 
     INTERNAL_SERVER_ERROR: 'internal_server_error',
 };
