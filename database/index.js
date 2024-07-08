@@ -1,13 +1,13 @@
-import mysql from 'mysql2/promise';
+const mysql = require('mysql2/promise');
 
 const config = {
-    host: 'localhost', // DB 주소 (현재는 로컬호스트)
-    user: 'changeme', // DB 계정 이름으로 변경
-    password: 'changeme', // DB 계정 비밀번호으로 변경
-    database: 'changeme', // 데이터베이스 이름으로 변경 (교재에서는 edu_community)
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
+    port: process.env.DB_PORT,
+    connectionLimit: 10,
     waitForConnections: true,
-    port: 3306,
-    connectionLimit: 10, // 기본값은 10
 };
 
 /* DB Pool 생성 */
@@ -52,4 +52,4 @@ const query = async (queryString, response) => {
     }
 };
 
-export { config, pool, query };
+module.exports = { config, pool, query };

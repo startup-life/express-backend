@@ -1,8 +1,10 @@
-import express from 'express';
-import session from 'express-session';
-import cors from 'cors';
-import route from './route/index.js';
-import * as dbConnect from './database/index.js';
+require('dotenv').config();
+
+const express = require('express');
+const session = require('express-session');
+const cors = require('cors');
+const route = require('./route/index.js');
+const dbConnect = require('./database/index.js');
 
 const app = express();
 const port = 3000;

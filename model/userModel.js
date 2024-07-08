@@ -1,8 +1,8 @@
-import bcrypt from 'bcrypt';
-import * as dbConnect from '../database/index.js';
+const bcrypt = require('bcrypt');
+const dbConnect = require('../database/index.js');
 
 // 회원가입
-export const signUpUser = async (requestData, response) => {
+exports.signUpUser = async (requestData, response) => {
     const { email, password, nickname } = requestData;
 
     const checkEmailSql = `SELECT email FROM user_table WHERE email = ${email};`;
@@ -20,7 +20,7 @@ export const signUpUser = async (requestData, response) => {
     return results.insertId;
 };
 
-export const uploadProfileImage = async (requestData, response) => {
+exports.uploadProfileImage = async (requestData, response) => {
     const { userId, profileImagePath } = requestData;
 
     const profileImagePathSql = `
@@ -41,7 +41,7 @@ export const uploadProfileImage = async (requestData, response) => {
 };
 
 // 로그인
-export const loginUser = async (requestData, response) => {
+exports.loginUser = async (requestData, response) => {
     const reqPassword = requestData.password.slice(1, -1);
     const sql = `SELECT * FROM user_table WHERE email = ${requestData.email} AND deleted_at IS NULL;`;
     const results = await dbConnect.query(sql, response);
@@ -74,7 +74,7 @@ export const loginUser = async (requestData, response) => {
     return user;
 };
 
-export const getUser = async (requestData, response) => {
+exports.getUser = async (requestData, response) => {
     const { userId } = requestData;
 
     /**
@@ -107,7 +107,7 @@ export const getUser = async (requestData, response) => {
 };
 
 // 회원정보 수정
-export const updateUser = async (requestData, response) => {
+exports.updateUser = async (requestData, response) => {
     const { userId, nickname, profileImagePath } = requestData;
     console.log(profileImagePath);
     const updateUserSql = `
@@ -142,7 +142,7 @@ export const updateUser = async (requestData, response) => {
 };
 
 // 비밀번호 변경
-export const changePassword = async (requestData, response) => {
+exports.changePassword = async (requestData, response) => {
     const { userId, password } = requestData;
 
     const sql = `
@@ -158,7 +158,7 @@ export const changePassword = async (requestData, response) => {
 };
 
 // 회원탈퇴
-export const softDeleteUser = async (requestData, response) => {
+exports.softDeleteUser = async (requestData, response) => {
     const { userId } = requestData;
     let sql = `SELECT * FROM user_table WHERE user_id = ${userId} AND deleted_at IS NULL;`;
     let results = await dbConnect.query(sql, response);
@@ -171,7 +171,7 @@ export const softDeleteUser = async (requestData, response) => {
     return results[0];
 };
 
-export const checkEmail = async (requestData, response) => {
+exports.checkEmail = async (requestData, response) => {
     const { email } = requestData;
 
     const sql = `SELECT email FROM user_table WHERE email = ${email};`;
@@ -182,7 +182,7 @@ export const checkEmail = async (requestData, response) => {
     return results;
 };
 
-export const checkNickname = async (requestData, response) => {
+exports.checkNickname = async (requestData, response) => {
     const { nickname } = requestData;
 
     const sql = `SELECT nickname FROM user_table WHERE nickname = ${nickname};`;
@@ -193,7 +193,7 @@ export const checkNickname = async (requestData, response) => {
     return results;
 };
 
-export const updateUserSession = async (requestData, response) => {
+exports.updateUserSession = async (requestData, response) => {
     const { userId, session } = requestData;
 
     const sql = `
@@ -208,7 +208,7 @@ export const updateUserSession = async (requestData, response) => {
     return results;
 };
 
-export const destroyUserSession = async (requestData, response) => {
+exports.destroyUserSession = async (requestData, response) => {
     const { userId } = requestData;
 
     const sql = `

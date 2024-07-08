@@ -1,7 +1,7 @@
-import * as dbConnect from '../database/index.js';
+const dbConnect = require('../database/index.js');
 
 // 게시글 목록 조회
-export const getPosts = async (requestData, response) => {
+exports.getPosts = async (requestData, response) => {
     const { offset, limit } = requestData;
     const sql = `
     SELECT
@@ -44,7 +44,7 @@ export const getPosts = async (requestData, response) => {
 };
 
 // 게시글 상세 조회
-export const getPost = async (requestData, response) => {
+exports.getPost = async (requestData, response) => {
     const { postId } = requestData;
 
     const sql = `
@@ -115,7 +115,7 @@ export const getPost = async (requestData, response) => {
 };
 
 // 게시글 작성 (일반 게시글)
-export const writePlainPost = async (requestData, response) => {
+exports.writePlainPost = async (requestData, response) => {
     const { userId, postTitle, postContent } = requestData;
 
     const nicknameSql = `
@@ -136,7 +136,7 @@ export const writePlainPost = async (requestData, response) => {
 };
 
 // 파일 업로드
-export const uploadFile = async (requestData, response) => {
+exports.uploadFile = async (requestData, response) => {
     const { userId, postId, filePath } = requestData;
 
     const postFilePathSql = `
@@ -158,7 +158,7 @@ export const uploadFile = async (requestData, response) => {
 };
 
 // 게시글 수정
-export const updatePost = async (requestData, response) => {
+exports.updatePost = async (requestData, response) => {
     const { postId, userId, postTitle, postContent, attachFilePath } =
         requestData;
     console.log('attachFilePath', attachFilePath);
@@ -212,7 +212,7 @@ export const updatePost = async (requestData, response) => {
     return { ...updatePostResults, post_id: postId };
 };
 
-export const softDeletePost = async (requestData, response) => {
+exports.softDeletePost = async (requestData, response) => {
     const { postId } = requestData;
 
     const sql = `

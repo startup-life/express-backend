@@ -1,6 +1,6 @@
-import express from 'express';
-import * as commentController from '../controller/commentController.js';
-import isLoggedIn from '../util/authUtil.js';
+const express = require('express');
+const commentController = require('../controller/commentController.js');
+const isLoggedIn = require('../util/authUtil.js');
 
 const router = express.Router();
 
@@ -25,4 +25,4 @@ router.delete(
     commentController.softDeleteComment,
 );
 
-export default router;
+module.exports = router;

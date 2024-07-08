@@ -1,8 +1,8 @@
-import mysql from 'mysql2/promise';
-import * as commentModel from '../model/commentModel.js';
+const mysql = require('mysql2/promise');
+const commentModel = require('../model/commentModel.js');
 
 // 댓글 작성
-export const writeComment = async (request, response) => {
+exports.writeComment = async (request, response) => {
     try {
         if (!request.params.post_id)
             return response.status(400).json({
@@ -66,7 +66,7 @@ export const writeComment = async (request, response) => {
 };
 
 // 댓글 조회
-export const getComments = async (request, response) => {
+exports.getComments = async (request, response) => {
     try {
         if (!request.params.post_id)
             return response.status(400).json({
@@ -105,7 +105,7 @@ export const getComments = async (request, response) => {
 };
 
 // 댓글 수정
-export const updateComment = async (request, response) => {
+exports.updateComment = async (request, response) => {
     if (!request.params.post_id)
         return response.status(400).json({
             status: 400,
@@ -174,7 +174,7 @@ export const updateComment = async (request, response) => {
 };
 
 // 댓글 삭제
-export const softDeleteComment = async (request, response) => {
+exports.softDeleteComment = async (request, response) => {
     try {
         if (!request.params.post_id)
             return response.status(400).json({

@@ -1,6 +1,6 @@
-import * as dbConnect from '../database/index.js';
+const dbConnect = require('../database/index.js');
 
-export const getComments = async (requestData, response) => {
+exports.getComments = async (requestData, response) => {
     const { postId } = requestData;
 
     const sql = `
@@ -16,7 +16,7 @@ export const getComments = async (requestData, response) => {
     return results;
 };
 
-export const writeComment = async (requestData, response) => {
+exports.writeComment = async (requestData, response) => {
     const { postId, userId, commentContent } = requestData;
 
     const nicknameSql = `
@@ -54,7 +54,7 @@ export const writeComment = async (requestData, response) => {
     return results;
 };
 
-export const updateComment = async (requestData, response) => {
+exports.updateComment = async (requestData, response) => {
     const { postId, commentId, userId, commentContent } = requestData;
 
     const checkPostSql = `
@@ -80,7 +80,7 @@ export const updateComment = async (requestData, response) => {
     return results;
 };
 
-export const softDeleteComment = async (requestData, response) => {
+exports.softDeleteComment = async (requestData, response) => {
     const { postId, commentId, userId } = requestData;
 
     const checkPostSql = `

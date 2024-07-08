@@ -1,12 +1,16 @@
-import mysql from 'mysql2';
-import bcrypt from 'bcrypt';
-import * as userModel from '../model/userModel.js';
-import { validEmail, validNickname, validPassword } from '../util/validUtil.js';
+const mysql = require('mysql2');
+const bcrypt = require('bcrypt');
+const userModel = require('../model/userModel.js');
+const {
+    validEmail,
+    validNickname,
+    validPassword,
+} = require('../util/validUtil.js');
 
-const saltRounds = 10;
+const SALT_ROUNDS = 10;
 
 // 회원가입
-export const signupUser = async (request, response) => {
+exports.signupUser = async (request, response) => {
     try {
         if (request.body.profileImagePath === undefined)
             request.body.profileImagePath = null;
@@ -36,7 +40,7 @@ export const signupUser = async (request, response) => {
 
         const { email, password, nickname, profileImagePath } = request.body;
 
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
         const reqSignupData = {
             email: mysql.escape(email),
@@ -91,7 +95,7 @@ export const signupUser = async (request, response) => {
 };
 
 // 프로필 사진 업로드
-export const uploadProfileImage = async (request, response) => {
+exports.uploadProfileImage = async (request, response) => {
     try {
         if (request.body.profileImage === undefined)
             return response.status(400).json({
@@ -138,7 +142,7 @@ export const uploadProfileImage = async (request, response) => {
 };
 
 // 로그인
-export const loginUser = async (request, response) => {
+exports.loginUser = async (request, response) => {
     try {
         if (!request.body.email)
             return response.status(400).json({
@@ -192,7 +196,7 @@ export const loginUser = async (request, response) => {
 };
 
 // 유저 정보 가져오기
-export const getUser = async (request, response) => {
+exports.getUser = async (request, response) => {
     try {
         if (!request.params.user_id)
             return response.status(400).json({
@@ -226,7 +230,7 @@ export const getUser = async (request, response) => {
 };
 
 // 회원정보 수정
-export const updateUser = async (request, response) => {
+exports.updateUser = async (request, response) => {
     try {
         if (!request.params.user_id)
             return response.status(400).json({
@@ -277,7 +281,7 @@ export const updateUser = async (request, response) => {
 };
 
 // 비밀번호 변경
-export const changePassword = async (request, response) => {
+exports.changePassword = async (request, response) => {
     try {
         if (!request.params.user_id)
             return response.status(400).json({
@@ -301,7 +305,7 @@ export const changePassword = async (request, response) => {
             });
         }
 
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
         const requestData = {
             userId: mysql.escape(userId),
             password: mysql.escape(hashedPassword),
@@ -332,7 +336,7 @@ export const changePassword = async (request, response) => {
 };
 
 // 회원탈퇴
-export const softDeleteUser = async (request, response) => {
+exports.softDeleteUser = async (request, response) => {
     try {
         if (!request.params.user_id)
             return response.status(400).json({
@@ -371,7 +375,7 @@ export const softDeleteUser = async (request, response) => {
 };
 
 // 로그인 상태 체크
-export const checkAuth = async (request, response) => {
+exports.checkAuth = async (request, response) => {
     try {
         const userId = request.headers.userid;
 
@@ -420,7 +424,7 @@ export const checkAuth = async (request, response) => {
 };
 
 // 로그아웃
-export const logoutUser = async (request, response) => {
+exports.logoutUser = async (request, response) => {
     try {
         // query -> headers
         const userId = request.headers.userid;
@@ -451,7 +455,7 @@ export const logoutUser = async (request, response) => {
     }
 };
 
-export const checkEmail = async (request, response) => {
+exports.checkEmail = async (request, response) => {
     const { email } = request.query;
 
     const requestData = {
@@ -475,7 +479,7 @@ export const checkEmail = async (request, response) => {
 };
 
 // 닉네임 체크
-export const checkNickname = async (request, response) => {
+exports.checkNickname = async (request, response) => {
     const { nickname } = request.query;
 
     const requestData = {

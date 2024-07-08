@@ -1,4 +1,4 @@
-import multer from 'multer';
+const multer = require('multer');
 
 // 프로필 이미지를 위한 multer storage 설정
 const profileStorage = multer.diskStorage({
@@ -32,4 +32,4 @@ const postStorage = multer.diskStorage({
 const uploadProfile = multer({ storage: profileStorage });
 const uploadPost = multer({ storage: postStorage });
 
-export { uploadProfile, uploadPost };
+module.exports = { uploadProfile, uploadPost };

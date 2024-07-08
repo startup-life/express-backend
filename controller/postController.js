@@ -1,5 +1,5 @@
-import mysql from 'mysql2/promise';
-import * as postModel from '../model/postModel.js';
+const mysql = require('mysql2/promise');
+const postModel = require('../model/postModel.js');
 
 /**
  * 게시글 작성
@@ -10,7 +10,7 @@ import * as postModel from '../model/postModel.js';
  */
 
 // 게시글 작성
-export const writePost = async (request, response) => {
+exports.writePost = async (request, response) => {
     try {
         if (request.attachFilePath === undefined) request.attachFilePath = null;
         if (!request.body.postTitle)
@@ -87,7 +87,7 @@ export const writePost = async (request, response) => {
 };
 
 // 파일 업로드
-export const uploadFile = async (request, response) => {
+exports.uploadFile = async (request, response) => {
     try {
         if (!request.filePath)
             return response.status(400).json({
@@ -128,7 +128,7 @@ export const uploadFile = async (request, response) => {
 };
 
 // 게시글 목록 조회
-export const getPosts = async (request, response) => {
+exports.getPosts = async (request, response) => {
     try {
         if (!request.query.offset || !request.query.limit)
             return response.status(400).json({
@@ -168,7 +168,7 @@ export const getPosts = async (request, response) => {
 };
 
 // 게시글 상세 조회
-export const getPost = async (request, response) => {
+exports.getPost = async (request, response) => {
     try {
         if (!request.params.post_id)
             return response.status(400).json({
@@ -207,7 +207,7 @@ export const getPost = async (request, response) => {
 };
 
 // 게시글 수정
-export const updatePost = async (request, response) => {
+exports.updatePost = async (request, response) => {
     try {
         if (!request.params.post_id)
             return response.status(400).json({
@@ -262,7 +262,7 @@ export const updatePost = async (request, response) => {
 };
 
 // 게시글 삭제
-export const softDeletePost = async (request, response) => {
+exports.softDeletePost = async (request, response) => {
     try {
         if (!request.params.post_id)
             return response.status(400).json({

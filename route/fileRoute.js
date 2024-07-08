@@ -1,6 +1,6 @@
-import express from 'express';
-import * as multerUtil from '../util/multerUtil.js';
-import * as fileController from '../controller/fileController.js';
+const express = require('express');
+const multerUtil = require('../util/multerUtil.js');
+const fileController = require('../controller/fileController.js');
 
 const router = express.Router();
 
@@ -15,4 +15,4 @@ router.post(
     fileController.uploadPostFile,
 );
 
-export default router;
+module.exports = router;

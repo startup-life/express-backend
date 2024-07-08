@@ -1,4 +1,4 @@
-export const uploadFile = (request, response) => {
+exports.uploadFile = (request, response) => {
     if (!request.file)
         response.status(400).send({
             status: 400,
@@ -15,7 +15,7 @@ export const uploadFile = (request, response) => {
     });
 };
 
-export const uploadPostFile = (request, response) => {
+exports.uploadPostFile = (request, response) => {
     if (!request.file)
         response.status(400).send({
             status: 400,

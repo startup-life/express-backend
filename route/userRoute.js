@@ -1,6 +1,6 @@
-import express from 'express';
-import * as userController from '../controller/userController.js';
-import isLoggedIn from '../util/authUtil.js';
+const express = require('express');
+const userController = require('../controller/userController.js');
+const isLoggedIn = require('../util/authUtil.js');
 
 const router = express.Router();
 
@@ -23,4 +23,4 @@ router.patch(
 
 router.delete('/users/:user_id', isLoggedIn, userController.softDeleteUser);
 
-export default router;
+module.exports = router;

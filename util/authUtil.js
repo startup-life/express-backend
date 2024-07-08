@@ -1,4 +1,4 @@
-import * as dbConnect from '../database/index.js';
+const dbConnect = require('../database/index.js');
 
 const isLoggedIn = async (req, res, next) => {
     const { method, url } = req;
@@ -47,4 +47,4 @@ const isLoggedIn = async (req, res, next) => {
     }
 };
 
-export default isLoggedIn;
+module.exports = isLoggedIn;
