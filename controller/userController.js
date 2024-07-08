@@ -6,8 +6,50 @@ const {
     validNickname,
     validPassword,
 } = require('../util/validUtil.js');
+const {
+    STATUS_CODE,
+    STATUS_MESSAGE,
+} = require('../util/constant/httpStatusCode.js');
 
 const SALT_ROUNDS = 10;
+
+// 로그인
+exports.loginUser = async (request, response, next) => {
+    try {
+        const { email, password } = request.body;
+
+        if (!email) {
+            const error = new Error(STATUS_MESSAGE.REQUIRED_EMAIL);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+        if (!password) {
+            const error = new Error(STATUS_MESSAGE.REQUIRED_PASSWORD);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
+        const requestData = {
+            email,
+            password,
+            sessionId: request.sessionID,
+        };
+        const responseData = await userModel.loginUser(requestData, response);
+
+        if (!responseData || responseData === null) {
+            const error = new Error(STATUS_MESSAGE.INVALID_EMAIL_OR_PASSWORD);
+            error.status = STATUS_CODE.UNAUTHORIZED;
+            throw error;
+        }
+        return response.status(200).json({
+            status: STATUS_CODE.OK,
+            message: STATUS_MESSAGE.LOGIN_SUCCESS,
+            data: responseData,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 
 // 회원가입
 exports.signupUser = async (request, response) => {
@@ -131,60 +173,6 @@ exports.uploadProfileImage = async (request, response) => {
             });
 
         return response.status(204).end();
-    } catch (error) {
-        console.log(error);
-        return response.status(500).json({
-            status: 500,
-            message: 'Internal Server Error',
-            data: null,
-        });
-    }
-};
-
-// 로그인
-exports.loginUser = async (request, response) => {
-    try {
-        if (!request.body.email)
-            return response.status(400).json({
-                status: 400,
-                message: 'required_email',
-                data: null,
-            });
-        if (!request.body.password)
-            return response.status(400).json({
-                status: 400,
-                message: 'required_password',
-                data: null,
-            });
-
-        const { email, password } = request.body;
-
-        const requestData = {
-            email: mysql.escape(email),
-            password: mysql.escape(password),
-        };
-        const responseData = await userModel.loginUser(requestData, response);
-
-        if (!responseData || responseData === null)
-            return response.status(401).json({
-                status: 401,
-                message: 'login_failed',
-                data: null,
-            });
-
-        responseData.sessionId = request.sessionID;
-
-        const requestSessionData = {
-            session: mysql.escape(responseData.sessionId),
-            userId: mysql.escape(responseData.userId),
-        };
-        await userModel.updateUserSession(requestSessionData, response);
-
-        return response.status(200).json({
-            status: 200,
-            message: 'login_success',
-            data: responseData,
-        });
     } catch (error) {
         console.log(error);
         return response.status(500).json({

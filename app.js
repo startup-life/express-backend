@@ -5,9 +5,10 @@ const session = require('express-session');
 const cors = require('cors');
 const route = require('./route/index.js');
 const dbConnect = require('./database/index.js');
+const { notFoundHandler, errorHandler } = require('./util/errorHandler.js');
 
 const app = express();
-const port = 3000;
+const PORT = process.env.BACKEND_PORT || 3000;
 
 app.use(cors('*'));
 
@@ -17,12 +18,12 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(
     session({
-        secret: 'startupcode!adapterz@', // secret key
+        secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: false,
         cookie: {
             httpOnly: true,
-            secure: false, // https에서만 동작하게 하려면 true로 변경,
+            secure: process.env.NODE_ENV === 'production', // https에서만 동작하게 하려면 true로 변경,
             maxAge: 1000 * 60 * 60 * 24, // 1 day
         },
     }),
@@ -31,31 +32,28 @@ app.use(
 // Routes
 app.use('/', route);
 
-// 404 응답
-app.use((request, response, next) => {
-    const error = new Error('Not Found');
-    error.status = 404;
-    next(error);
-});
+// Error Handler
+app.use(notFoundHandler);
+app.use(errorHandler);
 
-// 서버 에러 500 응답
-app.use((error, request, response, next) => {
-    response.status(error.status || 500);
-    response.send({
-        error: {
-            message: error.message,
-        },
-    });
-});
-
-// 서버 시작하면 전체 유저 데이터 session_id NULL로 초기화
-const initSessionId = async (res, req) => {
+/* 세션 ID 초기화 함수 */
+const initSessionId = async () => {
     const sql = 'UPDATE user_table SET session_id = NULL;';
-    await dbConnect.query(sql, res, req);
+    try {
+        await dbConnect.query(sql);
+        startServer();
+    } catch (error) {
+        console.error('Failed to initialize session IDs:', error);
+        process.exit(1); // 실패 시 프로세스 종료
+    }
 };
 
-initSessionId();
+// 서버 시작 함수
+const startServer = () => {
+    app.listen(PORT, () => {
+        console.log(`edu-community app listening on port ${PORT}`);
+    });
+};
 
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
-});
+// 초기화 후 서버 시작
+initSessionId();

@@ -1,6 +1,52 @@
 const bcrypt = require('bcrypt');
 const dbConnect = require('../database/index.js');
 
+// 로그인
+exports.loginUser = async (requestData, response) => {
+    const { email, password, sessionId } = requestData;
+    // const sql = `SELECT * FROM user_table WHERE email = ${email} AND deleted_at IS NULL;`;
+    // const results = await dbConnect.query(sql, response);
+    const sql = `SELECT * FROM user_table WHERE email = ? AND deleted_at IS NULL;`;
+    const results = await dbConnect.query(sql, [email], response);
+
+    if (!results[0] || results[0] === 'undefined' || results[0] === undefined)
+        return null;
+
+    const match = await bcrypt.compare(password, results[0].password);
+    if (!match) return null;
+
+    if (results[0].file_id !== null) {
+        // const profileSql = `SELECT file_path FROM file_table WHERE file_id = ${results[0].file_id} AND deleted_at IS NULL AND file_category = 1;`;
+        // const profileResults = await dbConnect.query(profileSql, response);
+        const profileSql = `SELECT file_path FROM file_table WHERE file_id = ? AND deleted_at IS NULL AND file_category = 1;`;
+        const profileResults = await dbConnect.query(
+            profileSql,
+            [results[0].file_id],
+            response,
+        );
+        results[0].profileImagePath = profileResults[0].file_path;
+    } else {
+        results[0].profileImagePath = '/public/image/profile/default.png';
+    }
+
+    const user = {
+        userId: results[0].user_id,
+        email: results[0].email,
+        nickname: results[0].nickname,
+        profileImagePath: results[0].profile_image_path,
+        sessionId,
+        created_at: results[0].created_at,
+        updated_at: results[0].updated_at,
+        deleted_at: results[0].deleted_at,
+    };
+
+    // 세션 업데이트 로직
+    const sessionSql = `UPDATE user_table SET session_id = ? WHERE user_id = ?;`;
+    await dbConnect.query(sessionSql, [sessionId, user.userId]);
+
+    return user;
+};
+
 // 회원가입
 exports.signUpUser = async (requestData, response) => {
     const { email, password, nickname } = requestData;
@@ -38,40 +84,6 @@ exports.uploadProfileImage = async (requestData, response) => {
 
     const userProfileResults = await dbConnect.query(userProfileSql, response);
     return userProfileResults.insertId;
-};
-
-// 로그인
-exports.loginUser = async (requestData, response) => {
-    const reqPassword = requestData.password.slice(1, -1);
-    const sql = `SELECT * FROM user_table WHERE email = ${requestData.email} AND deleted_at IS NULL;`;
-    const results = await dbConnect.query(sql, response);
-
-    if (!results[0] || results[0] === 'undefined' || results[0] === undefined)
-        return null;
-
-    const match = await bcrypt.compare(reqPassword, results[0].password);
-    if (!match) return null;
-
-    if (results[0].file_id !== null) {
-        const profileSql = `SELECT file_path FROM file_table WHERE file_id = ${results[0].file_id} AND deleted_at IS NULL AND file_category = 1;`;
-        const profileResults = await dbConnect.query(profileSql, response);
-        console.log(profileResults);
-        results[0].profileImagePath = profileResults[0].file_path;
-    } else {
-        results[0].profileImagePath = '/public/image/profile/default.png';
-    }
-
-    const user = {
-        userId: results[0].user_id,
-        email: results[0].email,
-        nickname: results[0].nickname,
-        profileImagePath: results[0].profile_image_path,
-        created_at: results[0].created_at,
-        updated_at: results[0].updated_at,
-        deleted_at: results[0].deleted_at,
-    };
-
-    return user;
 };
 
 exports.getUser = async (requestData, response) => {
