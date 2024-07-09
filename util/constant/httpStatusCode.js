@@ -68,6 +68,11 @@ const STATUS_MESSAGE = {
     UPDATE_COMMENT_SUCCESS: 'update_comment_success',
     DELETE_COMMENT_SUCCESS: 'delete_comment_success',
 
+    /*================= File =================*/
+    INVALID_FILE: 'invalid_file',
+
+    FILE_UPLOAD_SUCCESS: 'file_upload_success',
+
     INTERNAL_SERVER_ERROR: 'internal_server_error',
 };
 
