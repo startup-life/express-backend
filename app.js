@@ -16,6 +16,13 @@ const { STATUS_MESSAGE } = require('./util/constant/httpStatusCode');
 const app = express();
 const PORT = process.env.BACKEND_PORT || 3000;
 
+// const corsOptions = {
+//     origin: [
+//         'https://node-community.startupcode.kr',
+//         'https://node-community-api.startupcode.kr',
+//     ],
+// };
+
 // CORS 설정
 app.use(cors('*'));
 
@@ -61,13 +68,6 @@ const limiter = rateLimit({
     legacyHeaders: false,
 });
 
-// const corsOptions = {
-//     origin: [
-//         'https://node-community.startupcode.kr',
-//         'https://node-community-api.startupcode.kr',
-//     ],
-// };
-
 // 정적 파일 경로 설정
 app.use('/public', express.static('public'));
 
@@ -104,11 +104,6 @@ app.use('/', route);
 // Error Handler
 app.use(notFoundHandler);
 app.use(errorHandler);
-
-// 서버 오픈 테스트
-app.get('/', (req, res) => {
-    res.send('Hello World!');
-});
 
 // 초기화 후 서버 시작
 initSessionId();
