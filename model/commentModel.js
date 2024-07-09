@@ -1,5 +1,13 @@
 const dbConnect = require('../database/index.js');
 
+/**
+ * 댓글 조회
+ * 댓글 작성
+ * 댓글 수정
+ * 댓글 삭제
+ */
+
+// 댓글 조회
 exports.getComments = async requestData => {
     const { postId } = requestData;
 
@@ -16,6 +24,7 @@ exports.getComments = async requestData => {
     return results;
 };
 
+// 댓글 작성
 exports.writeComment = async requestData => {
     const { postId, userId, commentContent } = requestData;
 
@@ -61,6 +70,7 @@ exports.writeComment = async requestData => {
     return results;
 };
 
+// 댓글 수정
 exports.updateComment = async requestData => {
     const { postId, commentId, userId, commentContent } = requestData;
 
@@ -92,6 +102,7 @@ exports.updateComment = async requestData => {
     return results;
 };
 
+// 댓글 삭제
 exports.softDeleteComment = async requestData => {
     const { postId, commentId, userId } = requestData;
 
