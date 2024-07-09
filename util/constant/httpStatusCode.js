@@ -64,6 +64,10 @@ const STATUS_MESSAGE = {
 
     NOT_A_SINGLE_COMMENT: 'not_a_single_comment',
 
+    WRITE_COMMENT_SUCCESS: 'write_comment_success',
+    UPDATE_COMMENT_SUCCESS: 'update_comment_success',
+    DELETE_COMMENT_SUCCESS: 'delete_comment_success',
+
     INTERNAL_SERVER_ERROR: 'internal_server_error',
 };
 

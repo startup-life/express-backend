@@ -1,4 +1,3 @@
-const mysql = require('mysql2/promise');
 const commentModel = require('../model/commentModel.js');
 const {
     STATUS_CODE,
@@ -7,15 +6,15 @@ const {
 
 // 댓글 조회
 exports.getComments = async (request, response, next) => {
+    const postId = request.params.post_id;
+
+    if (!postId) {
+        const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
     try {
-        const postId = request.params.post_id;
-
-        if (!postId) {
-            const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
-            error.status = STATUS_CODE.BAD_REQUEST;
-            throw error;
-        }
-
         const requestData = {
             postId,
         };
@@ -36,233 +35,172 @@ exports.getComments = async (request, response, next) => {
         return next(error);
     }
 };
-/*exports.getComments = async (request, response) => {
-    try {
-        if (!request.params.post_id)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_post_id',
-                data: null,
-            });
-
-        const postId = request.params.post_id;
-
-        const requestData = {
-            postId: mysql.escape(postId),
-        };
-        const results = await commentModel.getComments(requestData, response);
-        console.log(results);
-        if (!results)
-            return response.status(404).json({
-                status: 404,
-                message: 'not_a_single_comment',
-                data: null,
-            });
-
-        return response.status(200).json({
-            status: 200,
-            message: null,
-            data: results,
-        });
-    } catch (error) {
-        console.error(error);
-        response.status(500).json({
-            status: 500,
-            message: 'internal_server_error',
-            data: null,
-        });
-    }
-};*/
 
 // 댓글 작성
-exports.writeComment = async (request, response) => {
+exports.writeComment = async (request, response, next) => {
+    const postId = request.params.post_id;
+    const userId = request.headers.userid;
+    const { commentContent } = request.body;
+
+    if (!postId) {
+        const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
+    if (!commentContent) {
+        const error = new Error(STATUS_MESSAGE.INVALID_COMMENT_CONTENT);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
+    if (commentContent.length > 1000) {
+        const error = new Error(STATUS_MESSAGE.INVALID_COMMENT_CONTENT_LENGTH);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
     try {
-        if (!request.params.post_id)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_post_id',
-                data: null,
-            });
-
-        if (!request.body.commentContent)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_comment_content',
-                data: null,
-            });
-
-        if (request.body.commentContent.length > 1000)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_comment_content_length',
-                data: null,
-            });
-
-        const postId = request.params.post_id;
-        const { commentContent } = request.body;
-        const userId = request.headers.userid;
-
         const requestData = {
-            postId: mysql.escape(postId),
-            userId: mysql.escape(userId),
-            commentContent: mysql.escape(commentContent),
+            postId,
+            userId,
+            commentContent,
         };
-        const results = await commentModel.writeComment(requestData, response);
 
-        if (!results)
-            return response.status(404).json({
-                status: 404,
-                message: 'not_a_single_post',
-                data: null,
-            });
+        const responseData = await commentModel.writeComment(requestData);
 
-        if (results === 'insert_error')
-            return response.status(500).json({
-                status: 500,
-                message: 'internal_server_error',
-                data: null,
-            });
+        if (!responseData) {
+            const error = new Error(STATUS_MESSAGE.NOT_A_SINGLE_POST);
+            error.status = STATUS_CODE.NOT_FOUND;
+            throw error;
+        }
 
-        return response.status(201).json({
-            status: 201,
-            message: 'write_comment_success',
+        if (responseData === 'insert_error') {
+            const error = new Error(STATUS_MESSAGE.INTERNAL_SERVER_ERROR);
+            error.status = STATUS_CODE.INTERNAL_SERVER_ERROR;
+            throw error;
+        }
+
+        return response.status(STATUS_CODE.CREATED).json({
+            status: STATUS_CODE.CREATED,
+            message: STATUS_MESSAGE.WRITE_COMMENT_SUCCESS,
             data: null,
         });
     } catch (error) {
-        console.error(error);
-        response.status(500).json({
-            status: 500,
-            message: 'internal_server_error',
-            data: null,
-        });
+        return next(error);
     }
 };
 
 // 댓글 수정
-exports.updateComment = async (request, response) => {
-    if (!request.params.post_id)
-        return response.status(400).json({
-            status: 400,
-            message: 'invalid_post_id',
-            data: null,
-        });
-    if (!request.params.comment_id)
-        return response.status(400).json({
-            status: 400,
-            message: 'invalid_comment_id',
-            data: null,
-        });
-    if (!request.body.commentContent)
-        return response.status(400).json({
-            status: 400,
-            message: 'invalid_comment_content',
-            data: null,
-        });
-    if (request.body.commentContent.length > 1000)
-        return response.status(400).json({
-            status: 400,
-            message: 'invalid_comment_content_length',
-            data: null,
-        });
+exports.updateComment = async (request, response, next) => {
+    const { post_id, comment_id } = request.params;
+    const userId = request.headers.userid;
+    const { commentContent } = request.body;
+
+    if (!post_id) {
+        const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
+    if (!comment_id) {
+        const error = new Error(STATUS_MESSAGE.INVALID_COMMENT_ID);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
+    if (!commentContent) {
+        const error = new Error(STATUS_MESSAGE.INVALID_COMMENT_CONTENT);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
+    if (commentContent.length > 1000) {
+        const error = new Error(STATUS_MESSAGE.INVALID_COMMENT_CONTENT_LENGTH);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
     try {
-        const postId = request.params.post_id;
-        const commentId = request.params.comment_id;
-        const userId = request.headers.userid;
-        const { commentContent } = request.body;
-
         const requestData = {
-            postId: mysql.escape(postId),
-            commentId: mysql.escape(commentId),
-            userId: mysql.escape(userId),
-            commentContent: mysql.escape(commentContent),
+            postId: post_id,
+            commentId: comment_id,
+            userId,
+            commentContent,
         };
-        const results = await commentModel.updateComment(requestData, response);
+        const responseData = await commentModel.updateComment(requestData);
 
-        if (!results)
-            return response.status(404).json({
-                status: 404,
-                message: 'not_a_single_post',
-                data: null,
-            });
+        if (!responseData) {
+            const error = new Error(STATUS_MESSAGE.NOT_A_SINGLE_POST);
+            error.status = STATUS_CODE.NOT_FOUND;
+            throw error;
+        }
 
-        if (results === 'update_error')
-            return response.status(500).json({
-                status: 500,
-                message: 'internal_server_error',
-                data: null,
-            });
+        if (responseData === 'update_error') {
+            const error = new Error(STATUS_MESSAGE.INTERNAL_SERVER_ERROR);
+            error.status = STATUS_CODE.INTERNAL_SERVER_ERROR;
+            throw error;
+        }
 
-        return response.status(200).json({
-            status: 200,
-            message: 'update_comment_success',
+        return response.status(STATUS_CODE.OK).json({
+            status: STATUS_CODE.OK,
+            message: STATUS_MESSAGE.UPDATE_COMMENT_SUCCESS,
             data: null,
         });
     } catch (error) {
-        console.error(error);
-        response.status(500).json({
-            status: 500,
-            message: 'internal_server_error',
-            data: null,
-        });
+        return next(error);
     }
 };
 
 // 댓글 삭제
-exports.softDeleteComment = async (request, response) => {
+exports.softDeleteComment = async (request, response, next) => {
+    const { post_id: postId, comment_id: commentId } = request.params;
+    const { userid: userId } = request.headers;
+
+    if (!postId) {
+        const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
+    if (!commentId) {
+        const error = new Error(STATUS_MESSAGE.INVALID_COMMENT_ID);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
     try {
-        if (!request.params.post_id)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_post_id',
-                data: null,
-            });
-
-        if (!request.params.comment_id)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_comment_id',
-                data: null,
-            });
-
-        const postId = request.params.post_id;
-        const commentId = request.params.comment_id;
-        const userId = request.headers.userid;
-
         const requestData = {
-            postId: mysql.escape(postId),
-            commentId: mysql.escape(commentId),
-            userId: mysql.escape(userId),
+            postId,
+            commentId,
+            userId,
         };
-        const results = await commentModel.softDeleteComment(
-            requestData,
-            response,
-        );
+        const results = await commentModel.softDeleteComment(requestData);
 
-        if (!results)
-            return response.status(404).json({
-                status: 404,
-                message: 'not_a_single_post',
-                data: null,
-            });
+        if (!results) {
+            const error = new Error(STATUS_MESSAGE.NOT_A_SINGLE_POST);
+            error.status = STATUS_CODE.NOT_FOUND;
+            throw error;
+        }
 
-        if (results === 'delete_error')
-            return response.status(500).json({
-                status: 500,
-                message: 'internal_server_error',
-                data: null,
-            });
+        if (results === 'no_auth_error') {
+            const error = new Error(STATUS_MESSAGE.REQUIRED_AUTHORIZATION);
+            error.status = STATUS_CODE.UNAUTHORIZED;
+            throw error;
+        }
 
-        return response.status(200).json({
-            status: 200,
-            message: 'delete_comment_success',
+        if (results === 'delete_error') {
+            const error = new Error(STATUS_MESSAGE.INTERNAL_SERVER_ERROR);
+            error.status = STATUS_CODE.INTERNAL_SERVER_ERROR;
+            throw error;
+        }
+
+        return response.status(STATUS_CODE.OK).json({
+            status: STATUS_CODE.OK,
+            message: STATUS_MESSAGE.DELETE_COMMENT_SUCCESS,
             data: null,
         });
     } catch (error) {
-        console.error(error);
-        response.status(500).json({
-            status: 500,
-            message: 'internal_server_error',
-            data: null,
-        });
+        return next(error);
     }
 };
