@@ -12,6 +12,10 @@ const STATUS_CODE = {
 };
 
 const STATUS_MESSAGE = {
+    /*================= Common =================*/
+    INVALID_OFFSET_OR_LIMIT: 'invalid_offset_or_limit',
+
+    /*================= User =================*/
     REQUIRED_EMAIL: 'required_email',
     REQUIRED_PASSWORD: 'required_password',
     REQUIRED_AUTHORIZATION: 'required_authorization',
@@ -36,6 +40,29 @@ const STATUS_MESSAGE = {
     UPDATE_USER_DATA_SUCCESS: 'update_user_data_success',
     CHANGE_USER_PASSWORD_SUCCESS: 'change_user_password_success',
     DELETE_USER_DATA_SUCCESS: 'delete_user_data_success',
+
+    /*================= Post =================*/
+    INVALID_POST_ID: 'invalid_post_id',
+    INVALID_POST_TITLE: 'invalid_post_title',
+    INVALID_POST_TITLE_LENGTH: 'invalid_post_title_length',
+    INVALID_POST_CONTENT: 'invalid_post_content',
+    INVALID_POST_CONTENT_LENGHT: 'invalid_post_content_length',
+
+    NOT_A_SINGLE_POST: 'not_a_single_post',
+
+    GET_POSTS_SUCCESS: 'get_posts_success',
+    WRITE_POST_SUCCESS: 'write_post_success',
+    UPDATE_POST_SUCCESS: 'update_post_success',
+    DELETE_POST_SUCCESS: 'delete_post_success',
+
+    WRITE_POST_FAILED: 'write_post_failed',
+
+    /*================= Comment =================*/
+    INVALID_COMMENT_ID: 'invalid_comment_id',
+    INVALID_COMMENT_CONTENT: 'invalid_comment_content',
+    INVALID_COMMENT_CONTENT_LENGTH: 'invalid_comment_content_length',
+
+    NOT_A_SINGLE_COMMENT: 'not_a_single_comment',
 
     INTERNAL_SERVER_ERROR: 'internal_server_error',
 };

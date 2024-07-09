@@ -1,6 +1,21 @@
 const dbConnect = require('../database/index.js');
 
-exports.getComments = async (requestData, response) => {
+exports.getComments = async requestData => {
+    const { postId } = requestData;
+
+    const sql = `
+    SELECT ct.*, ut.file_id, COALESCE(ft.file_path, '/public/image/profile/default.jpg') AS profileImage
+    FROM comment_table AS ct
+    LEFT JOIN user_table AS ut ON ct.user_id = ut.user_id
+    LEFT JOIN file_table AS ft ON ut.file_id = ft.file_id
+    WHERE ct.post_id = ? AND ct.deleted_at IS NULL;
+    `;
+    const results = await dbConnect.query(sql, [postId]);
+
+    if (!results || results.length === 0) return null;
+    return results;
+};
+/*exports.getComments = async (requestData, response) => {
     const { postId } = requestData;
 
     const sql = `
@@ -14,7 +29,7 @@ exports.getComments = async (requestData, response) => {
 
     if (!results || results.length === 0) return null;
     return results;
-};
+};*/
 
 exports.writeComment = async (requestData, response) => {
     const { postId, userId, commentContent } = requestData;
