@@ -58,15 +58,15 @@ const limiter = rateLimit({
     legacyHeaders: false,
 });
 
-const corsOptions = {
-    origin: [
-        'https://node-community.startupcode.kr',
-        'https://node-community-api.startupcode.kr',
-    ],
-};
+// const corsOptions = {
+//     origin: [
+//         'https://node-community.startupcode.kr',
+//         'https://node-community-api.startupcode.kr',
+//     ],
+// };
 
 // CORS 설정
-app.use(cors(corsOptions));
+app.use(cors('*'));
 
 // 정적 파일 경로 설정
 app.use('/public', express.static('public'));
