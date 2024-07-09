@@ -16,6 +16,9 @@ const { STATUS_MESSAGE } = require('./util/constant/httpStatusCode');
 const app = express();
 const PORT = process.env.BACKEND_PORT || 3000;
 
+// CORS 설정
+app.use(cors('*'));
+
 // 세션 초기화 함수
 const initSessionId = async () => {
     const sql = 'UPDATE user_table SET session_id = NULL;';
@@ -64,9 +67,6 @@ const limiter = rateLimit({
 //         'https://node-community-api.startupcode.kr',
 //     ],
 // };
-
-// CORS 설정
-app.use(cors('*'));
 
 // 정적 파일 경로 설정
 app.use('/public', express.static('public'));
