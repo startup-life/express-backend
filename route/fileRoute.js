@@ -5,12 +5,12 @@ const fileController = require('../controller/fileController.js');
 const router = express.Router();
 
 router.post(
-    '/users/upload/profile_image',
+    '/users/upload/profile-image',
     multerUtil.uploadProfile.single('profileImage'),
     fileController.uploadFile,
 );
 router.post(
-    '/posts/upload/attach_file',
+    '/posts/upload/attach-file',
     multerUtil.uploadPost.single('postFile'),
     fileController.uploadPostFile,
 );
