@@ -105,5 +105,10 @@ app.use('/', route);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
+// 서버 오픈 테스트
+app.get('/', (req, res) => {
+    res.send('Hello World!');
+});
+
 // 초기화 후 서버 시작
 initSessionId();
