@@ -47,7 +47,7 @@ exports.loginUser = async (request, response, next) => {
             data: responseData,
         });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };
 
@@ -101,7 +101,7 @@ exports.signupUser = async (request, response, next) => {
             data: resSignupData,
         });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };
 
@@ -133,7 +133,7 @@ exports.getUser = async (request, response, next) => {
             data: responseData,
         });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };
 
@@ -179,7 +179,7 @@ exports.updateUser = async (request, response, next) => {
             data: null,
         });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };
 /*exports.updateUser = async (request, response) => {
@@ -274,7 +274,7 @@ exports.checkAuth = async (request, response, next) => {
             },
         });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };
 
@@ -316,7 +316,7 @@ exports.changePassword = async (request, response, next) => {
             data: null,
         });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };
 /*exports.changePassword = async (request, response) => {
@@ -401,7 +401,7 @@ exports.softDeleteUser = async (request, response, next) => {
             data: null,
         });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };
 /*exports.softDeleteUser = async (request, response) => {
@@ -460,11 +460,11 @@ exports.logoutUser = async (request, response, next) => {
 
                 return response.status(STATUS_CODE.END).end();
             } catch (error) {
-                next(error);
+                return next(error);
             }
         });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };
 
@@ -494,7 +494,7 @@ exports.checkEmail = async (request, response, next) => {
         error.status = STATUS_CODE.BAD_REQUEST;
         throw error;
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };
 /*exports.checkEmail = async (request, response, next) => {
@@ -551,7 +551,7 @@ exports.checkNickname = async (request, response, next) => {
         error.status = STATUS_CODE.BAD_REQUEST;
         throw error;
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };
 /*exports.checkNickname = async (request, response) => {
