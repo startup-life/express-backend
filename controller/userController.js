@@ -1,4 +1,3 @@
-const mysql = require('mysql2');
 const bcrypt = require('bcrypt');
 const userModel = require('../model/userModel.js');
 const {
@@ -13,22 +12,35 @@ const {
 
 const SALT_ROUNDS = 10;
 
+/**
+ * 로그인
+ * 회원가입
+ * 유저 정보 가져오기
+ * 로그인 상태 체크
+ * 비밀번호 변경
+ * 회원 탈퇴
+ * 로그아웃
+ * 이메일 중복 체크
+ * 닉네임 중복 체크
+ */
+
 // 로그인
 exports.loginUser = async (request, response, next) => {
+    const { email, password } = request.body;
+
+    if (!email) {
+        const error = new Error(STATUS_MESSAGE.REQUIRED_EMAIL);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
+    if (!password) {
+        const error = new Error(STATUS_MESSAGE.REQUIRED_PASSWORD);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
     try {
-        const { email, password } = request.body;
-
-        if (!email) {
-            const error = new Error(STATUS_MESSAGE.REQUIRED_EMAIL);
-            error.status = STATUS_CODE.BAD_REQUEST;
-            throw error;
-        }
-        if (!password) {
-            const error = new Error(STATUS_MESSAGE.REQUIRED_PASSWORD);
-            error.status = STATUS_CODE.BAD_REQUEST;
-            throw error;
-        }
-
         const requestData = {
             email,
             password,
@@ -41,7 +53,7 @@ exports.loginUser = async (request, response, next) => {
             error.status = STATUS_CODE.UNAUTHORIZED;
             throw error;
         }
-        return response.status(200).json({
+        return response.status(STATUS_CODE.OK).json({
             status: STATUS_CODE.OK,
             message: STATUS_MESSAGE.LOGIN_SUCCESS,
             data: responseData,
@@ -53,25 +65,25 @@ exports.loginUser = async (request, response, next) => {
 
 // 회원가입
 exports.signupUser = async (request, response, next) => {
+    const { email, password, nickname, profileImagePath } = request.body;
+
+    if (!email || !validEmail(email)) {
+        const error = new Error(STATUS_MESSAGE.INVALID_EMAIL);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+    if (!nickname || !validNickname(nickname)) {
+        const error = new Error(STATUS_MESSAGE.INVALID_NICKNAME);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+    if (!password || !validPassword(password)) {
+        const error = new Error(STATUS_MESSAGE.INVALID_PASSWORD);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
     try {
-        const { email, password, nickname, profileImagePath } = request.body;
-
-        if (!email || !validEmail(email)) {
-            const error = new Error(STATUS_MESSAGE.INVALID_EMAIL);
-            error.status = STATUS_CODE.BAD_REQUEST;
-            throw error;
-        }
-        if (!nickname || !validNickname(nickname)) {
-            const error = new Error(STATUS_MESSAGE.INVALID_NICKNAME);
-            error.status = STATUS_CODE.BAD_REQUEST;
-            throw error;
-        }
-        if (!password || !validPassword(password)) {
-            const error = new Error(STATUS_MESSAGE.INVALID_PASSWORD);
-            error.status = STATUS_CODE.BAD_REQUEST;
-            throw error;
-        }
-
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
         const reqSignupData = {
@@ -95,7 +107,7 @@ exports.signupUser = async (request, response, next) => {
             throw error;
         }
 
-        return response.status(201).json({
+        return response.status(STATUS_CODE.CREATED).json({
             status: STATUS_CODE.CREATED,
             message: STATUS_MESSAGE.SIGNUP_SUCCESS,
             data: resSignupData,
@@ -107,15 +119,15 @@ exports.signupUser = async (request, response, next) => {
 
 // 유저 정보 가져오기
 exports.getUser = async (request, response, next) => {
+    const { user_id: userId } = request.params;
+
+    if (!userId) {
+        const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
     try {
-        const userId = request.params.user_id;
-
-        if (!userId) {
-            const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
-            error.status = STATUS_CODE.BAD_REQUEST;
-            throw error;
-        }
-
         const requestData = {
             userId, // mysql.escape 제거, 모델에서 처리
         };
@@ -139,21 +151,22 @@ exports.getUser = async (request, response, next) => {
 
 // 회원정보 수정
 exports.updateUser = async (request, response, next) => {
+    const { user_id: userId } = request.params;
+    const { nickname, profileImagePath } = request.body;
+
+    if (!userId) {
+        const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
+    if (!nickname) {
+        const error = new Error(STATUS_MESSAGE.INVALID_NICKNAME);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
     try {
-        const userId = request.params.user_id;
-        const { nickname, profileImagePath } = request.body;
-
-        if (!userId) {
-            const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
-            error.status = STATUS_CODE.BAD_REQUEST;
-            throw error;
-        }
-        if (!nickname) {
-            const error = new Error(STATUS_MESSAGE.INVALID_NICKNAME);
-            error.status = STATUS_CODE.BAD_REQUEST;
-            throw error;
-        }
-
         const requestData = {
             userId,
             nickname,
@@ -182,67 +195,18 @@ exports.updateUser = async (request, response, next) => {
         return next(error);
     }
 };
-/*exports.updateUser = async (request, response) => {
-    try {
-        if (!request.params.user_id)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_user_id',
-                data: null,
-            });
-        if (!request.body.nickname)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_nickname',
-                data: null,
-            });
-
-        const userId = request.params.user_id;
-        const { nickname, profileImagePath } = request.body;
-        console.log(profileImagePath);
-
-        const requestData = {
-            userId: mysql.escape(userId),
-            nickname: mysql.escape(nickname),
-        };
-        if (profileImagePath !== undefined)
-            requestData.profileImagePath = mysql.escape(profileImagePath);
-
-        const resData = await userModel.updateUser(requestData, response);
-
-        if (resData === null)
-            return response.status(404).json({
-                status: 404,
-                message: 'not_found_user',
-                data: null,
-            });
-
-        return response.status(201).json({
-            status: 201,
-            message: 'update_user_data_success',
-            data: null,
-        });
-    } catch (error) {
-        console.log(error);
-        return response.status(500).json({
-            status: 500,
-            message: 'Internal Server Error',
-            data: null,
-        });
-    }
-};*/
 
 // 로그인 상태 체크
 exports.checkAuth = async (request, response, next) => {
+    const { userid: userId } = request.headers;
+
+    if (!userId) {
+        const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
     try {
-        const userId = request.headers.userid;
-
-        if (!userId) {
-            const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
-            error.status = STATUS_CODE.BAD_REQUEST;
-            throw error;
-        }
-
         const requestData = {
             userId,
         };
@@ -280,22 +244,22 @@ exports.checkAuth = async (request, response, next) => {
 
 // 비밀번호 변경
 exports.changePassword = async (request, response, next) => {
+    const { user_id: userId } = request.params;
+    const { password } = request.body;
+
+    if (!userId) {
+        const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
+    if (!password || !validPassword(password)) {
+        const error = new Error(STATUS_MESSAGE.INVALID_PASSWORD);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
     try {
-        const userId = request.params.user_id;
-        const { password } = request.body;
-
-        if (!userId) {
-            const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
-            error.status = STATUS_CODE.BAD_REQUEST;
-            throw error;
-        }
-
-        if (!password || !validPassword(password)) {
-            const error = new Error(STATUS_MESSAGE.INVALID_PASSWORD);
-            error.status = STATUS_CODE.BAD_REQUEST;
-            throw error;
-        }
-
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
         const requestData = {
@@ -319,71 +283,18 @@ exports.changePassword = async (request, response, next) => {
         return next(error);
     }
 };
-/*exports.changePassword = async (request, response) => {
-    try {
-        if (!request.params.user_id)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_user_id',
-                data: null,
-            });
 
-        const userId = request.params.user_id;
-        const { password } = request.body;
-
-        // 8자 이상, 특수문자 포함
-        const passwordRegex =
-            /^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-])(?=.*[0-9]).{8,16}$/;
-
-        if (!password || !passwordRegex.test(password)) {
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_password',
-                data: null,
-            });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-        const requestData = {
-            userId: mysql.escape(userId),
-            password: mysql.escape(hashedPassword),
-        };
-
-        const resData = await userModel.changePassword(requestData, response);
-        if (resData === null) {
-            return response.status(404).json({
-                status: 404,
-                message: 'not_found_user',
-                data: null,
-            });
-        }
-
-        return response.status(201).json({
-            status: 201,
-            message: 'change_user_password_success',
-            data: null,
-        });
-    } catch (error) {
-        console.log(error);
-        return response.status(500).json({
-            status: 500,
-            message: 'Internal Server Error',
-            data: null,
-        });
-    }
-};*/
-
-// 회원탈퇴
+// 회원 탈퇴
 exports.softDeleteUser = async (request, response, next) => {
+    const { user_id: userId } = request.params;
+
+    if (!userId) {
+        const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
     try {
-        const userId = request.params.user_id;
-
-        if (!userId) {
-            const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
-            error.status = STATUS_CODE.BAD_REQUEST;
-            throw error;
-        }
-
         const requestData = {
             userId,
         };
@@ -404,49 +315,12 @@ exports.softDeleteUser = async (request, response, next) => {
         return next(error);
     }
 };
-/*exports.softDeleteUser = async (request, response) => {
-    try {
-        if (!request.params.user_id)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_user_id',
-                data: null,
-            });
-
-        const userId = request.params.user_id;
-
-        const requestData = {
-            userId: mysql.escape(userId),
-        };
-        const resData = await userModel.softDeleteUser(requestData, response);
-
-        if (resData === null)
-            return response.status(404).json({
-                status: 404,
-                message: 'not_found_user',
-                data: null,
-            });
-
-        return response.status(200).json({
-            status: 200,
-            message: 'delete_user_data_success',
-            data: null,
-        });
-    } catch (error) {
-        console.log(error);
-        return response.status(500).json({
-            status: 500,
-            message: 'Internal Server Error',
-            data: null,
-        });
-    }
-};*/
 
 // 로그아웃
 exports.logoutUser = async (request, response, next) => {
-    try {
-        const userId = request.headers.userid;
+    const { userid: userId } = request.headers;
 
+    try {
         request.session.destroy(async error => {
             if (error) {
                 return next(error);
@@ -468,16 +342,17 @@ exports.logoutUser = async (request, response, next) => {
     }
 };
 
+// 이메일 중복 체크
 exports.checkEmail = async (request, response, next) => {
+    const { email } = request.query;
+
+    if (!email) {
+        const error = new Error(STATUS_MESSAGE.INVALID_EMAIL);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
     try {
-        const { email } = request.query;
-
-        if (!email) {
-            const error = new Error(STATUS_MESSAGE.INVALID_EMAIL);
-            error.status = STATUS_CODE.BAD_REQUEST;
-            throw error;
-        }
-
         const requestData = { email };
 
         const resData = await userModel.checkEmail(requestData);
@@ -497,44 +372,18 @@ exports.checkEmail = async (request, response, next) => {
         return next(error);
     }
 };
-/*exports.checkEmail = async (request, response, next) => {
-    try {
-        const { email } = request.query;
 
-        const requestData = {
-            email: mysql.escape(email),
-        };
-
-        const resData = await userModel.checkEmail(requestData, response);
-
-        if (resData === null)
-            return response.status(200).json({
-                status: 200,
-                message: 'available_email',
-                data: null,
-            });
-
-        return response.status(400).json({
-            status: 400,
-            message: 'already_exist_email',
-            data: null,
-        });
-    } catch (error) {
-        next(error);
-    }
-};*/
-
-// 닉네임 체크
+// 닉네임 중복 체크
 exports.checkNickname = async (request, response, next) => {
+    const { nickname } = request.query;
+
+    if (!nickname) {
+        const error = new Error(STATUS_MESSAGE.INVALID_NICKNAME);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
     try {
-        const { nickname } = request.query;
-
-        if (!nickname) {
-            const error = new Error(STATUS_MESSAGE.INVALID_NICKNAME);
-            error.status = STATUS_CODE.BAD_REQUEST;
-            throw error;
-        }
-
         const requestData = { nickname };
 
         const responseData = await userModel.checkNickname(requestData);
@@ -554,25 +403,3 @@ exports.checkNickname = async (request, response, next) => {
         return next(error);
     }
 };
-/*exports.checkNickname = async (request, response) => {
-    const { nickname } = request.query;
-
-    const requestData = {
-        nickname: mysql.escape(nickname),
-    };
-
-    const resData = await userModel.checkNickname(requestData, response);
-
-    if (resData === null)
-        return response.status(200).json({
-            status: 200,
-            message: 'available_nickname',
-            data: null,
-        });
-
-    return response.status(400).json({
-        status: 400,
-        message: 'already_exist_nickname',
-        data: null,
-    });
-};*/

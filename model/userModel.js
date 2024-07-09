@@ -2,6 +2,19 @@ const bcrypt = require('bcrypt');
 const dbConnect = require('../database/index.js');
 const { STATUS_MESSAGE } = require('../util/constant/httpStatusCode');
 
+/**
+ * 로그인
+ * 회원가입
+ * 유저 정보 불러오기
+ * 회원정보 수정
+ * 비밀번호 변경
+ * 회원 탈퇴
+ * 이메일 중복 체크
+ * 닉네임 중복 체크
+ * 유저 세션 정보 업데이트
+ * 유저 세션 정보 삭제
+ */
+
 // 로그인
 exports.loginUser = async (requestData, response) => {
     const { email, password, sessionId } = requestData;
@@ -98,6 +111,7 @@ exports.signUpUser = async requestData => {
     };
 };
 
+// 유저 정보 불러오기
 exports.getUser = async requestData => {
     const { userId } = requestData;
 
@@ -168,39 +182,6 @@ exports.updateUser = async requestData => {
 
     return userProfileResults;
 };
-/*exports.updateUser = async (requestData, response) => {
-    const { userId, nickname, profileImagePath } = requestData;
-    console.log(profileImagePath);
-    const updateUserSql = `
-    UPDATE user_table
-    SET nickname = ${nickname}
-    WHERE user_id = ${userId} AND deleted_at IS NULL;
-    `;
-    const updateUserResults = await dbConnect.query(updateUserSql, response);
-
-    if (!updateUserResults) return null;
-
-    if (profileImagePath === undefined) return updateUserResults;
-
-    const profileImageSql = `
-    INSERT INTO file_table
-    (user_id, file_path, file_category)
-    VALUES (${userId}, ${profileImagePath}, 1);
-    `;
-    const profileImageResults = await dbConnect.query(
-        profileImageSql,
-        response,
-    );
-
-    const userProfileSql = `
-    UPDATE user_table
-    SET file_id = ${profileImageResults.insertId}
-    WHERE user_id = ${userId} AND deleted_at IS NULL;
-    `;
-    const userProfileResults = await dbConnect.query(userProfileSql, response);
-
-    return userProfileResults;
-};*/
 
 // 비밀번호 변경
 exports.changePassword = async requestData => {
@@ -217,20 +198,6 @@ exports.changePassword = async requestData => {
 
     return results;
 };
-/*exports.changePassword = async (requestData, response) => {
-    const { userId, password } = requestData;
-
-    const sql = `
-    UPDATE user_table
-    SET password = ${password}
-    WHERE user_id = ${userId};
-    `;
-    const results = await dbConnect.query(sql, response);
-
-    if (!results) return null;
-
-    return results;
-};*/
 
 // 회원탈퇴
 exports.softDeleteUser = async requestData => {
@@ -245,19 +212,8 @@ exports.softDeleteUser = async requestData => {
 
     return selectResults[0];
 };
-/*exports.softDeleteUser = async (requestData, response) => {
-    const { userId } = requestData;
-    let sql = `SELECT * FROM user_table WHERE user_id = ${userId} AND deleted_at IS NULL;`;
-    let results = await dbConnect.query(sql, response);
 
-    if (!results) return null;
-
-    sql = `UPDATE user_table SET deleted_at = now() WHERE user_id = ${userId};`;
-    results = await dbConnect.query(sql, response);
-
-    return results[0];
-};*/
-
+// 이메일 중복 체크
 exports.checkEmail = async requestData => {
     const { email } = requestData;
 
@@ -268,17 +224,8 @@ exports.checkEmail = async requestData => {
 
     return results;
 };
-/*exports.checkEmail = async (requestData, response) => {
-    const { email } = requestData;
 
-    const sql = `SELECT email FROM user_table WHERE email = ${email};`;
-    const results = await dbConnect.query(sql, response);
-
-    if (!results || results.length === 0) return null;
-
-    return results;
-};*/
-
+// 이메일 중복 체크
 exports.checkNickname = async requestData => {
     const { nickname } = requestData;
 
@@ -290,17 +237,7 @@ exports.checkNickname = async requestData => {
     return results;
 };
 
-/*exports.checkNickname = async (requestData, response) => {
-    const { nickname } = requestData;
-
-    const sql = `SELECT nickname FROM user_table WHERE nickname = ${nickname};`;
-    const results = await dbConnect.query(sql, response);
-
-    if (!results || results.length === 0) return null;
-
-    return results;
-};*/
-
+// 유저 세션 정보 업데이트
 exports.updateUserSession = async (requestData, response) => {
     const { userId, session } = requestData;
 
@@ -316,6 +253,7 @@ exports.updateUserSession = async (requestData, response) => {
     return results;
 };
 
+// 유저 세션 정보 삭제
 exports.destroyUserSession = async (requestData, response) => {
     const { userId } = requestData;
 
