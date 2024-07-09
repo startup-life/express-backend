@@ -1,32 +1,24 @@
-import * as dbConnect from '../database/index.js';
-import { STATUS_CODES, MESSAGES } from '../util/responseConstants.js';
+const dbConnect = require('../database/index.js');
+const { STATUS_CODE, STATUS_MESSAGE } = require('./constant/httpStatusCode');
 
-const isLoggedIn = async (request, response, next) => {
-    const { method, url } = request;
-    console.log(`[isLoggedIn] method: ${method}, url: ${url}`);
-
-    const { session } = request.headers;
+const isLoggedIn = async (req, res, next) => {
+    const { session } = req.headers;
     const userId =
-        request.headers.userid && !Number.isNaN(request.headers.userid)
-            ? parseInt(request.headers.userid, 10)
+        req.headers.userid && !Number.isNaN(req.headers.userid)
+            ? parseInt(req.headers.userid, 10)
             : null;
 
     if (!userId) {
-        return response.status(401).json({
-            status: 401,
-            message: 'required_authorization check',
-            data: null,
-        });
+        const error = new Error(STATUS_MESSAGE.REQUIRED_AUTHORIZATION);
+        error.status = STATUS_CODE.UNAUTHORIZED;
+        throw error;
     }
 
     try {
         const userSessionData = await dbConnect.query(
-            `SELECT session_id FROM user_table WHERE user_id = ${userId};`,
-            response,
-        );
-
-        console.log(
-            `[isLoggedIn] userSessionData: ${JSON.stringify(userSessionData)}`,
+            `SELECT session_id FROM user_table WHERE user_id = ?;`,
+            [userId],
+            res,
         );
 
         if (
@@ -34,22 +26,15 @@ const isLoggedIn = async (request, response, next) => {
             userSessionData.length === 0 ||
             session !== userSessionData[0].session_id
         ) {
-            return response.status(STATUS_CODES.NOT_AUTHORIZED).json({
-                status: STATUS_CODES.NOT_AUTHORIZED,
-                message: MESSAGES.NOT_AUTHORIZED,
-                data: null,
-            });
+            const error = new Error(STATUS_MESSAGE.REQUIRED_AUTHORIZATION);
+            error.status = STATUS_CODE.UNAUTHORIZED;
+            throw error;
         }
 
         return next();
     } catch (error) {
-        console.error(error);
-        return response.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: MESSAGES.INTERNAL_SERVER_ERROR,
-            data: null,
-        });
+        next(error);
     }
 };
 
-export default isLoggedIn;
+module.exports = isLoggedIn;

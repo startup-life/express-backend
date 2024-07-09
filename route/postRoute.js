@@ -1,14 +1,13 @@
-import express from 'express';
-import * as postController from '../controller/postController.js';
-import isLoggedIn from '../util/authUtil.js';
+const express = require('express');
+const postController = require('../controller/postController.js');
+const isLoggedIn = require('../util/authUtil.js');
 
 const router = express.Router();
 
-// 업데이트 된 라우트
 router.get('/posts', isLoggedIn, postController.getPosts);
 router.get('/posts/:post_id', isLoggedIn, postController.getPost);
 router.post('/posts', isLoggedIn, postController.writePost);
 router.patch('/posts/:post_id', isLoggedIn, postController.updatePost);
 router.delete('/posts/:post_id', isLoggedIn, postController.softDeletePost);
 
-export default router;
+module.exports = router;

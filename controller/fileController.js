@@ -1,35 +1,44 @@
-import { STATUS_CODES, MESSAGES } from '../util/responseConstants.js';
+const {
+    STATUS_CODE,
+    STATUS_MESSAGE,
+} = require('../util/constant/httpStatusCode');
 
-export const uploadFile = (request, response) => {
-    if (!request.file)
-        response.status(STATUS_CODES.BAD_REQUEST).send({
-            status: STATUS_CODES.BAD_REQUEST,
-            message: MESSAGES.FILE.INVALID_FILE,
-            data: null,
+exports.uploadFile = (request, response, next) => {
+    if (!request.file) {
+        const error = new Error(STATUS_MESSAGE.INVALID_FILE);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
+
+    try {
+        response.status(STATUS_CODE.CREATED).send({
+            status: STATUS_CODE.CREATED,
+            message: STATUS_MESSAGE.FILE_UPLOAD_SUCCESS,
+            data: {
+                filePath: `/public/image/profile/${request.file.filename}`,
+            },
         });
-
-    response.status(STATUS_CODES.CREATED).send({
-        status: STATUS_CODES.CREATED,
-        message: MESSAGES.FILE.FILE_UPLOAD_SUCCESS,
-        data: {
-            filePath: `/public/image/profile/${request.file.filename}`,
-        },
-    });
+    } catch (error) {
+        return next(error);
+    }
 };
 
-export const uploadPostFile = (request, response) => {
-    if (!request.file)
-        response.status(STATUS_CODES.BAD_REQUEST).send({
-            status: STATUS_CODES.BAD_REQUEST,
-            message: MESSAGES.FILE.INVALID_FILE,
-            data: null,
-        });
+exports.uploadPostFile = (request, response, next) => {
+    if (!request.file) {
+        const error = new Error(STATUS_MESSAGE.INVALID_FILE);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    }
 
-    response.status(STATUS_CODES.CREATED).send({
-        status: STATUS_CODES.CREATED,
-        message: MESSAGES.FILE.FILE_UPLOAD_SUCCESS,
-        data: {
-            filePath: `/public/image/post/${request.file.filename}`,
-        },
-    });
+    try {
+        response.status(STATUS_CODE.CREATED).send({
+            status: STATUS_CODE.CREATED,
+            message: STATUS_MESSAGE.FILE_UPLOAD_SUCCESS,
+            data: {
+                filePath: `/public/image/post/${request.file.filename}`,
+            },
+        });
+    } catch (error) {
+        return next(error);
+    }
 };

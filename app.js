@@ -1,103 +1,109 @@
-import express from 'express';
-import session from 'express-session';
-import cors from 'cors';
-import { createServer } from 'https';
-import { readFileSync } from 'fs';
-import timeout from 'connect-timeout';
-import rateLimit from 'express-rate-limit';
+require('dotenv').config();
 
-import * as dbConnect from './database/index.js';
-import routes from './route/index.js';
+const express = require('express');
+const session = require('express-session');
+const cors = require('cors');
+const route = require('./route/index.js');
+const dbConnect = require('./database/index.js');
+const { notFoundHandler, errorHandler } = require('./util/errorHandler.js');
+const timeout = require('connect-timeout');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const fs = require('fs');
+const https = require('https');
+const { STATUS_MESSAGE } = require('./util/constant/httpStatusCode');
 
 const app = express();
-const port = 3000;
+const PORT = process.env.BACKEND_PORT || 3000;
 
+// const corsOptions = {
+//     origin: [
+//         'https://node-community.startupcode.kr',
+//         'https://node-community-api.startupcode.kr',
+//     ],
+// };
+
+// CORS 설정
 app.use(cors('*'));
 
+// 세션 초기화 함수
+const initSessionId = async () => {
+    const sql = 'UPDATE user_table SET session_id = NULL;';
+    try {
+        await dbConnect.query(sql);
+        startServer();
+    } catch (error) {
+        console.error('Failed to initialize session IDs:', error);
+        process.exit(1); // 실패 시 프로세스 종료
+    }
+};
+
+// 서버 시작 함수
+const startServer = () => {
+    const httpsOptions = {
+        key: fs.readFileSync(
+            '/etc/letsencrypt/live/node-community-api.startupcode.kr/privkey.pem',
+        ),
+        cert: fs.readFileSync(
+            '/etc/letsencrypt/live/node-community-api.startupcode.kr/fullchain.pem',
+        ),
+    };
+
+    https.createServer(httpsOptions, app).listen(PORT, () => {
+        console.log(`edu-community app listening on port ${PORT}`);
+    });
+};
+
+// 요청 속도 제한 설정
+const limiter = rateLimit({
+    // 10초동안
+    windowMs: 10 * 1000,
+    // 최대 100번의 요청을 허용
+    max: 100,
+    // 제한 초과 시 전송할 메시지
+    message: STATUS_MESSAGE.TOO_MANY_REQUESTS,
+    // RateLimit 헤더 정보를 표준으로 사용할 지 여부
+    standardHeaders: true,
+    // 레거시 X-RateLimit 헤더를 제거할 지 여부
+    legacyHeaders: false,
+});
+
+// 정적 파일 경로 설정
 app.use('/public', express.static('public'));
+
+// JSON 및 URL-encoded 요청 파싱
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// 세션 설정
 app.use(
     session({
-        secret: 'startupcode!adapterz@', // secret key
+        secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: false,
         cookie: {
             httpOnly: true,
-            secure: false, // https에서만 동작하게 하려면 true로 변경,
+            secure: process.env.NODE_ENV === 'production', // https에서만 동작하게 하려면 true로 변경,
             maxAge: 1000 * 60 * 60 * 24, // 1 day
         },
     }),
 );
 
-// 요청 속도 제한 설정
-const limiter = rateLimit({
-    // 1분 동안
-    windowMs: 60 * 1000,
-    // 최대 100개의 요청을 허용
-    max: 100,
-    // 제한 초과 시 전송할 메시지
-    message: 'too_many_requests',
-    // RateLimit 헤더 정보를 표준으로 사용할지 여부
-    standardHeaders: true,
-    // 레거시 X-RateLimit 헤더를 제거할지 여부
-    legacyHeaders: false,
-});
-
-// 모든 요청에 대해 요청 속도 제한 적용
-app.use(limiter);
-
-// Routes
-app.use('/', routes);
-
-// // 서버 에러 500 응답
-// app.use((error, request, response) => {
-//     response.status(error.status || 500);
-//     response.send({
-//         error: {
-//             message: error.message,
-//         },
-//     });
-// });
-
-// 요청 타임아웃 설정 (예: 5초)
+// Timeout 설정
 app.use(timeout('5s'));
 
-// 타임아웃 발생 시 처리 핸들러
-app.use((request, response, next) => {
-    if (!request.timedout) next();
-    else
-        response.status(503).send({
-            status: 503,
-            message: 'Request_timeout',
-            data: null,
-        });
-});
+// 요청 속도 제한 미들웨어
+app.use(limiter);
 
-// 서버 시작하면 전체 유저 데이터 session_id NULL로 초기화
-const initSessionId = async (response, request) => {
-    const sql = 'UPDATE user_table SET session_id = NULL;';
-    await dbConnect.query(sql, response, request);
-};
+// helmet
+app.use(helmet());
 
+// Routes
+app.use('/', route);
+
+// Error Handler
+app.use(notFoundHandler);
+app.use(errorHandler);
+
+// 초기화 후 서버 시작
 initSessionId();
-
-if (process.env.NODE_ENV === 'production') {
-    const option = {
-        key: readFileSync('/home/ubuntu/cert/privkey.pem'),
-        cert: readFileSync('/home/ubuntu/cert/fullchain.pem'),
-    };
-
-    createServer(option, app).listen(443, () => {
-        console.log('[HTTPS] edu-web-backend app listening on port 443');
-    });
-
-    app.listen(port, () => {
-        console.log(`[HTTP] edu-web-backend app listening on port ${port}`);
-    });
-} else {
-    app.listen(port, () => {
-        console.log(`[HTTP] edu-web-backend app listening on port ${port}`);
-    });
-}

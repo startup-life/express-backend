@@ -1,18 +1,18 @@
-import express from 'express';
-import * as multerUtil from '../util/multerUtil.js';
-import * as fileController from '../controller/fileController.js';
+const express = require('express');
+const multerUtil = require('../util/multerUtil.js');
+const fileController = require('../controller/fileController.js');
 
 const router = express.Router();
 
 router.post(
-    '/upload',
-    multerUtil.uploadProfile.single('attachFile'),
+    '/users/upload/profile-image',
+    multerUtil.uploadProfile.single('profileImage'),
     fileController.uploadFile,
 );
 router.post(
-    '/posts/upload',
+    '/posts/upload/attach-file',
     multerUtil.uploadPost.single('postFile'),
     fileController.uploadPostFile,
 );
 
-export default router;
+module.exports = router;
