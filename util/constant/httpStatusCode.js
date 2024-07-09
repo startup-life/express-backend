@@ -9,16 +9,20 @@ const STATUS_CODE = {
     CONFLICT: 409,
     TOO_MANY_REQUESTS: 429,
     INTERNAL_SERVER_ERROR: 500,
+    SERVER_TIMEOUT: 503,
 };
 
 const STATUS_MESSAGE = {
     /*================= Common =================*/
     INVALID_OFFSET_OR_LIMIT: 'invalid_offset_or_limit',
+    TOO_MANY_REQUESTS: 'too_many_requests',
 
     /*================= User =================*/
     REQUIRED_EMAIL: 'required_email',
     REQUIRED_PASSWORD: 'required_password',
     REQUIRED_AUTHORIZATION: 'required_authorization',
+
+    REQUEST_TIMEOUT: 'request_timeout',
 
     INVALID_EMAIL_OR_PASSWORD: 'invalid_email_or_password',
     INVALID_EMAIL: 'invalid_email',

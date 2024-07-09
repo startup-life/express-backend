@@ -6,6 +6,17 @@ const notFoundHandler = (request, response, next) => {
 };
 
 const errorHandler = (error, request, response, next) => {
+    if (request.timeout) {
+        response.status(STATUS_CODE.SERVER_TIMEOUT);
+        response.send({
+            error: {
+                status: STATUS_CODE.SERVER_TIMEOUT,
+                message: STATUS_MESSAGE.REQUEST_TIMEOUT,
+                data: null,
+            },
+        });
+    }
+
     response.status(error.status || STATUS_CODE.INTERNAL_SERVER_ERROR);
     response.send({
         error: {
