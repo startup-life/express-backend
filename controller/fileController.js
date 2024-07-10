@@ -15,7 +15,8 @@ exports.uploadFile = (request, response, next) => {
             status: STATUS_CODE.CREATED,
             message: STATUS_MESSAGE.FILE_UPLOAD_SUCCESS,
             data: {
-                filePath: `/public/image/profile/${request.file.filename}`,
+                //filePath: `image/profile/${request.file.filename}`,
+                filePath: request.file.location, // S3 객체 URL 반환
             },
         });
     } catch (error) {
@@ -35,7 +36,8 @@ exports.uploadPostFile = (request, response, next) => {
             status: STATUS_CODE.CREATED,
             message: STATUS_MESSAGE.FILE_UPLOAD_SUCCESS,
             data: {
-                filePath: `/public/image/post/${request.file.filename}`,
+                // filePath: `image/post/${request.file.filename}`,
+                filePath: request.file.location, // S3 객체 URL 반환
             },
         });
     } catch (error) {

@@ -31,7 +31,14 @@ const initSessionId = async () => {
     const sql = 'UPDATE user_table SET session_id = NULL;';
     try {
         await dbConnect.query(sql);
-        startServer();
+
+        if (process.env.NODE_ENV === 'production') {
+            // 세션 ID 초기화 완료 후 서버 시작
+            startHttpsServer();
+        } else {
+            // 세션 ID 초기화 완료 후 서버 시작
+            startHttpServer();
+        }
     } catch (error) {
         console.error('Failed to initialize session IDs:', error);
         process.exit(1); // 실패 시 프로세스 종료
@@ -39,7 +46,7 @@ const initSessionId = async () => {
 };
 
 // 서버 시작 함수
-const startServer = () => {
+const startHttpsServer = () => {
     const httpsOptions = {
         key: fs.readFileSync(
             '/etc/letsencrypt/live/node-community-api.startupcode.kr/privkey.pem',
@@ -50,6 +57,12 @@ const startServer = () => {
     };
 
     https.createServer(httpsOptions, app).listen(PORT, () => {
+        console.log(`edu-community app listening on port ${PORT}`);
+    });
+};
+
+const startHttpServer = () => {
+    app.listen(PORT, () => {
         console.log(`edu-community app listening on port ${PORT}`);
     });
 };
