@@ -48,12 +48,8 @@ const initSessionId = async () => {
 // 서버 시작 함수
 const startHttpsServer = () => {
     const httpsOptions = {
-        key: fs.readFileSync(
-            '/etc/letsencrypt/live/node-community-api.startupcode.kr/privkey.pem',
-        ),
-        cert: fs.readFileSync(
-            '/etc/letsencrypt/live/node-community-api.startupcode.kr/fullchain.pem',
-        ),
+        key: fs.readFileSync(process.env.PRIVATE_PEM_PATH),
+        cert: fs.readFileSync(process.env.FULLCHAIN_PEM_PATH),
     };
 
     https.createServer(httpsOptions, app).listen(PORT, () => {
