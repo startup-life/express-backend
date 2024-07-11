@@ -12,7 +12,7 @@ exports.getComments = async requestData => {
     const { postId } = requestData;
 
     const sql = `
-    SELECT ct.*, ut.file_id, COALESCE(ft.file_path, '/public/image/profile/default.jpg') AS profileImage
+    SELECT ct.*, ut.file_id, COALESCE(ft.file_path, 'https://express-backend.s3.ap-northeast-2.amazonaws.com/public/image/profile/default.jpg') AS profileImage
     FROM comment_table AS ct
     LEFT JOIN user_table AS ut ON ct.user_id = ut.user_id
     LEFT JOIN file_table AS ft ON ut.file_id = ft.file_id

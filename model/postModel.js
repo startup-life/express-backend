@@ -95,7 +95,7 @@ exports.getPosts = async (requestData, response) => {
             WHEN post_table.hits >= 1000 THEN CONCAT(ROUND(post_table.hits / 1000, 1), 'K')
             ELSE post_table.hits
         END as hits,
-        COALESCE(file_table.file_path, '/public/image/profile/default.jpg') AS profileImagePath
+        COALESCE(file_table.file_path, 'https://express-backend.s3.ap-northeast-2.amazonaws.com/public/image/profile/default.jpg') AS profileImagePath
     FROM post_table
             LEFT JOIN user_table ON post_table.user_id = user_table.user_id
             LEFT JOIN file_table ON user_table.file_id = file_table.file_id
