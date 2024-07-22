@@ -37,7 +37,8 @@ exports.loginUser = async (requestData, response) => {
         );
         results[0].profileImagePath = profileResults[0].file_path;
     } else {
-        results[0].profileImagePath = '/public/image/profile/default.png';
+        results[0].profileImagePath =
+            'https://express-backend.s3.ap-northeast-2.amazonaws.com/public/image/profile/default.jpg';
     }
 
     const user = {
