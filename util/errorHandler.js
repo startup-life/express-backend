@@ -6,7 +6,7 @@ const notFoundHandler = (request, response, next) => {
 };
 
 const errorHandler = (error, request, response, next) => {
-    if (request.timeout) {
+    if (error.timeout) {
         response.status(STATUS_CODE.SERVER_TIMEOUT);
         return response.send({
             error: {
@@ -26,5 +26,4 @@ const errorHandler = (error, request, response, next) => {
         }
     });
 };
-
 module.exports = { notFoundHandler, errorHandler };
