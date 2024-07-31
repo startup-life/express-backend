@@ -9,7 +9,7 @@ const STATUS_CODE = {
     CONFLICT: 409,
     TOO_MANY_REQUESTS: 429,
     INTERNAL_SERVER_ERROR: 500,
-    SERVER_TIMEOUT: 503,
+    SERVER_TIMEOUT: 503
 };
 
 const STATUS_MESSAGE = {
@@ -40,6 +40,7 @@ const STATUS_MESSAGE = {
     UPDATE_PROFILE_IMAGE_FAILED: 'update_profile_image_failed',
 
     LOGIN_SUCCESS: 'login_success',
+    LOGOUT_SUCCESS: 'logout_success',
     SIGNUP_SUCCESS: 'signup_success',
     UPDATE_USER_DATA_SUCCESS: 'update_user_data_success',
     CHANGE_USER_PASSWORD_SUCCESS: 'change_user_password_success',
@@ -77,10 +78,10 @@ const STATUS_MESSAGE = {
 
     FILE_UPLOAD_SUCCESS: 'file_upload_success',
 
-    INTERNAL_SERVER_ERROR: 'internal_server_error',
+    INTERNAL_SERVER_ERROR: 'internal_server_error'
 };
 
 module.exports = {
     STATUS_CODE,
-    STATUS_MESSAGE,
+    STATUS_MESSAGE
 };
