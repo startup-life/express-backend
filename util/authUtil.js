@@ -8,17 +8,17 @@ const isLoggedIn = async (req, res, next) => {
             ? parseInt(req.headers.userid, 10)
             : null;
 
-    if (!userId) {
-        const error = new Error(STATUS_MESSAGE.REQUIRED_AUTHORIZATION);
-        error.status = STATUS_CODE.UNAUTHORIZED;
-        throw error;
-    }
-
     try {
+        if (!userId) {
+            const error = new Error(STATUS_MESSAGE.REQUIRED_AUTHORIZATION);
+            error.status = STATUS_CODE.UNAUTHORIZED;
+            throw error;
+        }
+
         const userSessionData = await dbConnect.query(
             `SELECT session_id FROM user_table WHERE user_id = ?;`,
             [userId],
-            res,
+            res
         );
 
         if (
@@ -33,7 +33,7 @@ const isLoggedIn = async (req, res, next) => {
 
         return next();
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };
 
