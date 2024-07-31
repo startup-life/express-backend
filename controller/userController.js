@@ -3,11 +3,11 @@ const userModel = require('../model/userModel.js');
 const {
     validEmail,
     validNickname,
-    validPassword,
+    validPassword
 } = require('../util/validUtil.js');
 const {
     STATUS_CODE,
-    STATUS_MESSAGE,
+    STATUS_MESSAGE
 } = require('../util/constant/httpStatusCode.js');
 
 const SALT_ROUNDS = 10;
@@ -28,23 +28,23 @@ const SALT_ROUNDS = 10;
 exports.loginUser = async (request, response, next) => {
     const { email, password } = request.body;
 
-    if (!email) {
-        const error = new Error(STATUS_MESSAGE.REQUIRED_EMAIL);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
-    if (!password) {
-        const error = new Error(STATUS_MESSAGE.REQUIRED_PASSWORD);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
     try {
+        if (!email) {
+            const error = new Error(STATUS_MESSAGE.REQUIRED_EMAIL);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
+        if (!password) {
+            const error = new Error(STATUS_MESSAGE.REQUIRED_PASSWORD);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
         const requestData = {
             email,
             password,
-            sessionId: request.sessionID,
+            sessionId: request.sessionID
         };
         const responseData = await userModel.loginUser(requestData, response);
 
@@ -56,7 +56,7 @@ exports.loginUser = async (request, response, next) => {
         return response.status(STATUS_CODE.OK).json({
             status: STATUS_CODE.OK,
             message: STATUS_MESSAGE.LOGIN_SUCCESS,
-            data: responseData,
+            data: responseData
         });
     } catch (error) {
         return next(error);
@@ -67,30 +67,30 @@ exports.loginUser = async (request, response, next) => {
 exports.signupUser = async (request, response, next) => {
     const { email, password, nickname, profileImagePath } = request.body;
 
-    if (!email || !validEmail(email)) {
-        const error = new Error(STATUS_MESSAGE.INVALID_EMAIL);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-    if (!nickname || !validNickname(nickname)) {
-        const error = new Error(STATUS_MESSAGE.INVALID_NICKNAME);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-    if (!password || !validPassword(password)) {
-        const error = new Error(STATUS_MESSAGE.INVALID_PASSWORD);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
     try {
+        if (!email || !validEmail(email)) {
+            const error = new Error(STATUS_MESSAGE.INVALID_EMAIL);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+        if (!nickname || !validNickname(nickname)) {
+            const error = new Error(STATUS_MESSAGE.INVALID_NICKNAME);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+        if (!password || !validPassword(password)) {
+            const error = new Error(STATUS_MESSAGE.INVALID_PASSWORD);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
         const reqSignupData = {
             email,
             password: hashedPassword,
             nickname,
-            profileImagePath: profileImagePath || null,
+            profileImagePath: profileImagePath || null
         };
 
         const resSignupData = await userModel.signUpUser(reqSignupData);
@@ -110,7 +110,7 @@ exports.signupUser = async (request, response, next) => {
         return response.status(STATUS_CODE.CREATED).json({
             status: STATUS_CODE.CREATED,
             message: STATUS_MESSAGE.SIGNUP_SUCCESS,
-            data: resSignupData,
+            data: resSignupData
         });
     } catch (error) {
         return next(error);
@@ -121,15 +121,15 @@ exports.signupUser = async (request, response, next) => {
 exports.getUser = async (request, response, next) => {
     const { user_id: userId } = request.params;
 
-    if (!userId) {
-        const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
     try {
+        if (!userId) {
+            const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
         const requestData = {
-            userId, // mysql.escape 제거, 모델에서 처리
+            userId // mysql.escape 제거, 모델에서 처리
         };
         const responseData = await userModel.getUser(requestData);
 
@@ -142,7 +142,7 @@ exports.getUser = async (request, response, next) => {
         return response.status(200).json({
             status: 200,
             message: null,
-            data: responseData,
+            data: responseData
         });
     } catch (error) {
         return next(error);
@@ -154,23 +154,23 @@ exports.updateUser = async (request, response, next) => {
     const { user_id: userId } = request.params;
     const { nickname, profileImagePath } = request.body;
 
-    if (!userId) {
-        const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
-    if (!nickname) {
-        const error = new Error(STATUS_MESSAGE.INVALID_NICKNAME);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
     try {
+        if (!userId) {
+            const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
+        if (!nickname) {
+            const error = new Error(STATUS_MESSAGE.INVALID_NICKNAME);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
         const requestData = {
             userId,
             nickname,
-            profileImagePath,
+            profileImagePath
         };
         const responseData = await userModel.updateUser(requestData);
 
@@ -189,7 +189,7 @@ exports.updateUser = async (request, response, next) => {
         return response.status(STATUS_CODE.CREATED).json({
             status: STATUS_CODE.CREATED,
             message: STATUS_MESSAGE.UPDATE_USER_DATA_SUCCESS,
-            data: null,
+            data: null
         });
     } catch (error) {
         return next(error);
@@ -200,15 +200,15 @@ exports.updateUser = async (request, response, next) => {
 exports.checkAuth = async (request, response, next) => {
     const { userid: userId } = request.headers;
 
-    if (!userId) {
-        const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
     try {
+        if (!userId) {
+            const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
         const requestData = {
-            userId,
+            userId
         };
 
         const userData = await userModel.getUser(requestData);
@@ -234,8 +234,8 @@ exports.checkAuth = async (request, response, next) => {
                 nickname: userData.nickname,
                 profileImagePath: userData.profile_image,
                 auth_token: userData.session_id,
-                auth_status: true,
-            },
+                auth_status: true
+            }
         });
     } catch (error) {
         return next(error);
@@ -247,24 +247,24 @@ exports.changePassword = async (request, response, next) => {
     const { user_id: userId } = request.params;
     const { password } = request.body;
 
-    if (!userId) {
-        const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
-    if (!password || !validPassword(password)) {
-        const error = new Error(STATUS_MESSAGE.INVALID_PASSWORD);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
     try {
+        if (!userId) {
+            const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
+        if (!password || !validPassword(password)) {
+            const error = new Error(STATUS_MESSAGE.INVALID_PASSWORD);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
         const requestData = {
             userId,
-            password: hashedPassword,
+            password: hashedPassword
         };
         const responseData = await userModel.changePassword(requestData);
 
@@ -277,7 +277,7 @@ exports.changePassword = async (request, response, next) => {
         return response.status(STATUS_CODE.CREATED).json({
             status: STATUS_CODE.CREATED,
             message: STATUS_MESSAGE.CHANGE_USER_PASSWORD_SUCCESS,
-            data: null,
+            data: null
         });
     } catch (error) {
         return next(error);
@@ -288,15 +288,15 @@ exports.changePassword = async (request, response, next) => {
 exports.softDeleteUser = async (request, response, next) => {
     const { user_id: userId } = request.params;
 
-    if (!userId) {
-        const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
     try {
+        if (!userId) {
+            const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
         const requestData = {
-            userId,
+            userId
         };
         const responseData = await userModel.softDeleteUser(requestData);
 
@@ -309,7 +309,7 @@ exports.softDeleteUser = async (request, response, next) => {
         return response.status(STATUS_CODE.OK).json({
             status: STATUS_CODE.OK,
             message: STATUS_MESSAGE.DELETE_USER_DATA_SUCCESS,
-            data: null,
+            data: null
         });
     } catch (error) {
         return next(error);
@@ -321,14 +321,14 @@ exports.logoutUser = async (request, response, next) => {
     const { userid: userId } = request.headers;
 
     try {
-        request.session.destroy(async error => {
+        request.session.destroy(async (error) => {
             if (error) {
                 return next(error);
             }
 
             try {
                 const requestData = {
-                    userId,
+                    userId
                 };
                 await userModel.destroyUserSession(requestData, response);
 
@@ -346,13 +346,13 @@ exports.logoutUser = async (request, response, next) => {
 exports.checkEmail = async (request, response, next) => {
     const { email } = request.query;
 
-    if (!email) {
-        const error = new Error(STATUS_MESSAGE.INVALID_EMAIL);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
     try {
+        if (!email) {
+            const error = new Error(STATUS_MESSAGE.INVALID_EMAIL);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
         const requestData = { email };
 
         const resData = await userModel.checkEmail(requestData);
@@ -361,7 +361,7 @@ exports.checkEmail = async (request, response, next) => {
             return response.status(STATUS_CODE.OK).json({
                 status: STATUS_CODE.OK,
                 message: STATUS_MESSAGE.AVAILVABLE_EMAIL,
-                data: null,
+                data: null
             });
         }
 
@@ -377,13 +377,13 @@ exports.checkEmail = async (request, response, next) => {
 exports.checkNickname = async (request, response, next) => {
     const { nickname } = request.query;
 
-    if (!nickname) {
-        const error = new Error(STATUS_MESSAGE.INVALID_NICKNAME);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
     try {
+        if (!nickname) {
+            const error = new Error(STATUS_MESSAGE.INVALID_NICKNAME);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
         const requestData = { nickname };
 
         const responseData = await userModel.checkNickname(requestData);
@@ -392,7 +392,7 @@ exports.checkNickname = async (request, response, next) => {
             return response.status(STATUS_CODE.OK).json({
                 status: STATUS_CODE.OK,
                 message: STATUS_MESSAGE.AVAILABLE_NICKNAME,
-                data: null,
+                data: null
             });
         }
 
