@@ -35,7 +35,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && success()
+    if: github.ref == 'refs/heads/jenkins-dev' && success()
 
     steps:
       - name: Checkout repository
