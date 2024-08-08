@@ -67,7 +67,6 @@ jobs:
           cd /home/${{ secrets.SERVER_USER }}/backend
           git checkout -b  action-dev
           sudo git pull origin action-dev
-          chmod 666 /backend/package-lock.json
-          npm install
+          chmod 666 package-lock.json
           pm2 kill || pm2 start app.js --name "github-action-app"
           EOF
