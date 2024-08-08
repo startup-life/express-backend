@@ -64,7 +64,7 @@ jobs:
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
           [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
           nvm use 20
-          cd /home/${{ secrets.SERVER_USER }}/backend
+          cd /home/${{ secrets.SERVER_USER }}/action
           sudo git pull origin action-dev
           npm install
           pm2 restart all || pm2 start app.js --name "github-action-app"
