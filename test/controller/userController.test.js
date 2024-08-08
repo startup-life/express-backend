@@ -6,7 +6,6 @@ const { app, startHttpServer } = require('../../app');
 let server;
 
 beforeAll((done) => {
-    process.env.NODE_ENV = 'test'; // 테스트 환경 설정
     server = startHttpServer(0); // 포트를 0으로 설정하여 사용 가능한 포트를 자동으로 할당받음
     server.on('listening', () => {
         const address = server.address();

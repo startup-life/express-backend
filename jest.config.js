@@ -1,3 +1,4 @@
 module.exports = {
-    forceExit: true
+    setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+    testEnvironment: 'node'
 };
