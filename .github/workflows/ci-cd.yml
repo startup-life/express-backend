@@ -7,7 +7,7 @@ on:
       - action-dev
   pull_request:
     branches:
-      - action-dev
+      - action
 
 jobs:
   build:
