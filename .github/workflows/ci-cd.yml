@@ -67,8 +67,6 @@ jobs:
           cd /home/${{ secrets.SERVER_USER }}/backend
           git checkout -b  action-dev
           sudo git pull origin action-dev
-          sudo chmod 655 package-lock.json
-          cat .env
           npm install
           pm2 kill || pm2 start app.js --name "github-action-app"
           EOF
