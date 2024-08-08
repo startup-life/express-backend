@@ -1,3 +1,5 @@
+// test/model/userModel.test.js
+
 const userModel = require('../../model/userModel');
 const dbConnect = require('../../database/index');
 const bcrypt = require('bcrypt');
