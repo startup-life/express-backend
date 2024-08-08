@@ -1,7 +1,7 @@
 const commentModel = require('../model/commentModel.js');
 const {
     STATUS_CODE,
-    STATUS_MESSAGE,
+    STATUS_MESSAGE
 } = require('../util/constant/httpStatusCode');
 
 /**
@@ -15,15 +15,15 @@ const {
 exports.getComments = async (request, response, next) => {
     const { post_id: postId } = request.params;
 
-    if (!postId) {
-        const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
     try {
+        if (!postId) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
         const requestData = {
-            postId,
+            postId
         };
         const responseData = await commentModel.getComments(requestData);
 
@@ -36,7 +36,7 @@ exports.getComments = async (request, response, next) => {
         return response.status(STATUS_CODE.OK).json({
             status: STATUS_CODE.OK,
             message: null,
-            data: responseData,
+            data: responseData
         });
     } catch (error) {
         return next(error);
@@ -49,29 +49,31 @@ exports.writeComment = async (request, response, next) => {
     const { userid: userId } = request.headers;
     const { commentContent } = request.body;
 
-    if (!postId) {
-        const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
-    if (!commentContent) {
-        const error = new Error(STATUS_MESSAGE.INVALID_COMMENT_CONTENT);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
-    if (commentContent.length > 1000) {
-        const error = new Error(STATUS_MESSAGE.INVALID_COMMENT_CONTENT_LENGTH);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
     try {
+        if (!postId) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
+        if (!commentContent) {
+            const error = new Error(STATUS_MESSAGE.INVALID_COMMENT_CONTENT);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
+        if (commentContent.length > 1000) {
+            const error = new Error(
+                STATUS_MESSAGE.INVALID_COMMENT_CONTENT_LENGTH
+            );
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
         const requestData = {
             postId,
             userId,
-            commentContent,
+            commentContent
         };
 
         const responseData = await commentModel.writeComment(requestData);
@@ -91,7 +93,7 @@ exports.writeComment = async (request, response, next) => {
         return response.status(STATUS_CODE.CREATED).json({
             status: STATUS_CODE.CREATED,
             message: STATUS_MESSAGE.WRITE_COMMENT_SUCCESS,
-            data: null,
+            data: null
         });
     } catch (error) {
         return next(error);
@@ -104,36 +106,38 @@ exports.updateComment = async (request, response, next) => {
     const { userid: userId } = request.headers;
     const { commentContent } = request.body;
 
-    if (!postId) {
-        const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
-    if (!commentId) {
-        const error = new Error(STATUS_MESSAGE.INVALID_COMMENT_ID);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
-    if (!commentContent) {
-        const error = new Error(STATUS_MESSAGE.INVALID_COMMENT_CONTENT);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
-    if (commentContent.length > 1000) {
-        const error = new Error(STATUS_MESSAGE.INVALID_COMMENT_CONTENT_LENGTH);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
     try {
+        if (!postId) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
+        if (!commentId) {
+            const error = new Error(STATUS_MESSAGE.INVALID_COMMENT_ID);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
+        if (!commentContent) {
+            const error = new Error(STATUS_MESSAGE.INVALID_COMMENT_CONTENT);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
+        if (commentContent.length > 1000) {
+            const error = new Error(
+                STATUS_MESSAGE.INVALID_COMMENT_CONTENT_LENGTH
+            );
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
         const requestData = {
             postId,
             commentId,
             userId,
-            commentContent,
+            commentContent
         };
         const responseData = await commentModel.updateComment(requestData);
 
@@ -152,7 +156,7 @@ exports.updateComment = async (request, response, next) => {
         return response.status(STATUS_CODE.OK).json({
             status: STATUS_CODE.OK,
             message: STATUS_MESSAGE.UPDATE_COMMENT_SUCCESS,
-            data: null,
+            data: null
         });
     } catch (error) {
         return next(error);
@@ -164,23 +168,23 @@ exports.softDeleteComment = async (request, response, next) => {
     const { post_id: postId, comment_id: commentId } = request.params;
     const { userid: userId } = request.headers;
 
-    if (!postId) {
-        const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
-    if (!commentId) {
-        const error = new Error(STATUS_MESSAGE.INVALID_COMMENT_ID);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
     try {
+        if (!postId) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
+        if (!commentId) {
+            const error = new Error(STATUS_MESSAGE.INVALID_COMMENT_ID);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
         const requestData = {
             postId,
             commentId,
-            userId,
+            userId
         };
         const results = await commentModel.softDeleteComment(requestData);
 
@@ -205,7 +209,7 @@ exports.softDeleteComment = async (request, response, next) => {
         return response.status(STATUS_CODE.OK).json({
             status: STATUS_CODE.OK,
             message: STATUS_MESSAGE.DELETE_COMMENT_SUCCESS,
-            data: null,
+            data: null
         });
     } catch (error) {
         return next(error);
