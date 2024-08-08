@@ -66,11 +66,7 @@ jobs:
           nvm use 20
           cd /home/${{ secrets.SERVER_USER }}/action
           sudo git pull origin action-dev
+          cat .env
           npm install
-          # Load .env file
-          if [ -f .env ]; then
-            source .env
-          fi
-          
           pm2 restart all || pm2 start app.js --name "github-action-app"
           EOF
