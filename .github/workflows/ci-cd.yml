@@ -69,5 +69,5 @@ jobs:
           sudo git pull origin action-dev
           cat .env
           npm install
-          pm2 restart all || pm2 start app.js --name "github-action-app"
+          pm2 kill || pm2 start app.js --name "github-action-app"
           EOF
