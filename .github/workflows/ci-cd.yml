@@ -48,7 +48,7 @@ jobs:
           node-version: '20.x'
 
       - name: Install dependencies
-        run: npm install --unsafe-perm
+        run: npm install
 
       - name: Prepare SSH Key
         run: |
@@ -67,6 +67,7 @@ jobs:
           cd /home/${{ secrets.SERVER_USER }}/backend
           git checkout -b  action-dev
           sudo git pull origin action-dev
+          chmod 666 ./backend/package-lock.json
           npm install
           pm2 kill || pm2 start app.js --name "github-action-app"
           EOF
