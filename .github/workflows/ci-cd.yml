@@ -35,7 +35,8 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/jenkins-dev' && success()
+    # if: success()
+    if: github.ref == 'refs/heads/action-dev' && success()
 
     steps:
       - name: Checkout repository
@@ -64,7 +65,7 @@ jobs:
           [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
           nvm use 20
           cd /home/${{ secrets.SERVER_USER }}/backend
-          sudo git pull origin main
+          sudo git pull origin action-dev
           npm install
           pm2 restart all || pm2 start index.js --name "my-node-app"
           EOF
