@@ -67,5 +67,5 @@ jobs:
           cd /home/${{ secrets.SERVER_USER }}/backend
           sudo git pull origin action-dev
           npm install
-          pm2 restart all || pm2 start index.js --name "my-node-app"
+          pm2 restart all || pm2 start app.js --name "github-action-app"
           EOF
