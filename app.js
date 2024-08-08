@@ -49,17 +49,17 @@ const initSessionId = async () => {
 const startHttpsServer = () => {
     const httpsOptions = {
         key: fs.readFileSync(process.env.PRIVATE_PEM_PATH),
-        cert: fs.readFileSync(process.env.FULLCHAIN_PEM_PATH),
+        cert: fs.readFileSync(process.env.FULLCHAIN_PEM_PATH)
     };
 
-    https.createServer(httpsOptions, app).listen(PORT, () => {
+    return https.createServer(httpsOptions, app).listen(PORT, () => {
         console.log(`edu-community app listening on port ${PORT}`);
     });
 };
 
-const startHttpServer = () => {
-    app.listen(PORT, () => {
-        console.log(`edu-community app listening on port ${PORT}`);
+const startHttpServer = (port = PORT) => {
+    return app.listen(port, () => {
+        console.log(`edu-community app listening on port ${port}`);
     });
 };
 
@@ -74,7 +74,7 @@ const limiter = rateLimit({
     // RateLimit 헤더 정보를 표준으로 사용할 지 여부
     standardHeaders: true,
     // 레거시 X-RateLimit 헤더를 제거할 지 여부
-    legacyHeaders: false,
+    legacyHeaders: false
 });
 
 // 정적 파일 경로 설정
@@ -93,9 +93,9 @@ app.use(
         cookie: {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production', // https에서만 동작하게 하려면 true로 변경,
-            maxAge: 1000 * 60 * 60 * 24, // 1 day
-        },
-    }),
+            maxAge: 1000 * 60 * 60 * 24 // 1 day
+        }
+    })
 );
 
 // Timeout 설정
@@ -116,3 +116,5 @@ app.use(errorHandler);
 
 // 초기화 후 서버 시작
 initSessionId();
+
+module.exports = { app, startHttpServer, startHttpsServer };
