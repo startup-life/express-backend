@@ -30,7 +30,9 @@ app.use(cors('*'));
 const initSessionId = async () => {
     const sql = 'UPDATE user_table SET session_id = NULL;';
     try {
+        console.log('Starting to initialize session IDs...');
         await dbConnect.query(sql);
+        console.log('Session IDs initialized successfully.');
 
         if (process.env.NODE_ENV === 'production') {
             // 세션 ID 초기화 완료 후 서버 시작
