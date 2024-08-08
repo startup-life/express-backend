@@ -48,7 +48,7 @@ jobs:
           node-version: '20.x'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --unsafe-perm
 
       - name: Prepare SSH Key
         run: |
