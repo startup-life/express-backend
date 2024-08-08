@@ -9,8 +9,6 @@ const { notFoundHandler, errorHandler } = require('./util/errorHandler.js');
 const timeout = require('connect-timeout');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
-const fs = require('fs');
-const https = require('https');
 const { STATUS_MESSAGE } = require('./util/constant/httpStatusCode');
 
 const app = express();
@@ -28,33 +26,14 @@ app.use(cors('*'));
 
 // 세션 초기화 함수
 const initSessionId = async () => {
-    const sql = 'UPDATE user_table SET session_id = NULL;';
     try {
+        const sql = 'UPDATE user_table SET session_id = NULL;';
         await dbConnect.query(sql);
-
-        if (process.env.NODE_ENV === 'production') {
-            // 세션 ID 초기화 완료 후 서버 시작
-            startHttpsServer();
-        } else {
-            // 세션 ID 초기화 완료 후 서버 시작
-            startHttpServer();
-        }
+        startHttpServer();
     } catch (error) {
         console.error('Failed to initialize session IDs:', error);
         process.exit(1); // 실패 시 프로세스 종료
     }
-};
-
-// 서버 시작 함수
-const startHttpsServer = () => {
-    const httpsOptions = {
-        key: fs.readFileSync(process.env.PRIVATE_PEM_PATH),
-        cert: fs.readFileSync(process.env.FULLCHAIN_PEM_PATH)
-    };
-
-    https.createServer(httpsOptions, app).listen(PORT, () => {
-        console.log(`edu-community app listening on port ${PORT}`);
-    });
 };
 
 const startHttpServer = () => {
