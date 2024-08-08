@@ -67,5 +67,9 @@ jobs:
           cd /home/${{ secrets.SERVER_USER }}/action
           sudo git pull origin action-dev
           npm install
+          # Load .env file
+          if [ -f .env ]; then
+            export $(cat .env | xargs)
+          fi
           pm2 restart all || pm2 start app.js --name "github-action-app"
           EOF
