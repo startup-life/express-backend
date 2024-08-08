@@ -30,13 +30,15 @@ app.use(cors('*'));
 const initSessionId = async () => {
     const sql = 'UPDATE user_table SET session_id = NULL;';
     try {
+        console.log('Starting to initialize session IDs...');
         await dbConnect.query(sql);
+        console.log('Session IDs initialized successfully.');
 
         if (process.env.NODE_ENV === 'production') {
-            // 세션 ID 초기화 완료 후 서버 시작
+            console.log('Starting HTTPS server...');
             startHttpsServer();
         } else {
-            // 세션 ID 초기화 완료 후 서버 시작
+            console.log('Starting HTTP server...');
             startHttpServer();
         }
     } catch (error) {
@@ -61,6 +63,17 @@ const startHttpServer = (port = PORT) => {
     return app.listen(port, () => {
         console.log(`edu-community app listening on port ${port}`);
     });
+};
+
+const testDbConnection = async () => {
+    try {
+        console.log('Testing database connection...');
+        const result = await dbConnect.query('SELECT 1');
+        console.log('Database connection successful:', result);
+    } catch (error) {
+        console.error('Database connection failed:', error);
+        process.exit(1);
+    }
 };
 
 // 요청 속도 제한 설정
@@ -113,6 +126,8 @@ app.use('/', route);
 // Error Handler
 app.use(notFoundHandler);
 app.use(errorHandler);
+
+testDbConnection().then(initSessionId);
 
 // 초기화 후 서버 시작
 initSessionId();
