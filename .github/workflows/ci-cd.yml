@@ -26,6 +26,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Permissions
+        run: |
+          sudo chown -R $USER /home/ubnutu/backend
+          sudo chmod -R 777 /home/ubnutu/backend
+
       - name: Install dependencies
         run: npm install
 
@@ -67,6 +72,5 @@ jobs:
           cd /home/${{ secrets.SERVER_USER }}/backend
           git checkout -b  action-dev
           sudo git pull origin action-dev
-          chmod 666 package-lock.json
           pm2 kill || pm2 start app.js --name "github-action-app"
           EOF
