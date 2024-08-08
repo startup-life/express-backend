@@ -36,7 +36,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     # if: success()
-    if: github.ref == 'refs/heads/action-dev' && success()
+    if: github.ref == 'refs/heads/action' && success()
 
     steps:
       - name: Checkout repository
