@@ -57,7 +57,7 @@ export const writeComment = async (request, response) => {
         });
     } catch (error) {
         console.error(error);
-        response.status(500).json({
+        return response.status(500).json({
             status: 500,
             message: 'internal_server_error',
             data: null,
@@ -96,7 +96,7 @@ export const getComments = async (request, response) => {
         });
     } catch (error) {
         console.error(error);
-        response.status(500).json({
+        return response.status(500).json({
             status: 500,
             message: 'internal_server_error',
             data: null,
@@ -165,7 +165,7 @@ export const updateComment = async (request, response) => {
         });
     } catch (error) {
         console.error(error);
-        response.status(500).json({
+        return response.status(500).json({
             status: 500,
             message: 'internal_server_error',
             data: null,
@@ -225,7 +225,7 @@ export const softDeleteComment = async (request, response) => {
         });
     } catch (error) {
         console.error(error);
-        response.status(500).json({
+        return response.status(500).json({
             status: 500,
             message: 'internal_server_error',
             data: null,
