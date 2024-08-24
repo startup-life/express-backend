@@ -13,6 +13,8 @@
         "prepare": "husky install"
     },
     "dependencies": {
+        "@commitlint/cli": "^19.4.0",
+        "@commitlint/config-conventional": "^19.2.2",
         "access-log": "^0.4.1",
         "bcrypt": "^5.1.1",
         "cookie-parser": "^1.4.6",
