@@ -37,7 +37,7 @@ app.use((request, response, next) => {
 });
 
 // 서버 에러 500 응답
-app.use((error, request, response, next) => {
+app.use((error, request, response) => {
     response.status(error.status || 500);
     response.send({
         error: {
