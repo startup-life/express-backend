@@ -422,25 +422,31 @@ export const checkAuth = async (request, response) => {
 // 로그아웃
 export const logoutUser = async (request, response) => {
     try {
-        // query -> headers
         const userId = request.headers.userid;
-        request.session.destroy(error => {
-            if (error) {
-                console.log(error);
-                return response.status(500).json({
-                    status: 500,
-                    message: 'internal_server_error',
-                    data: null,
-                });
-            }
 
-            const requestData = {
-                userId,
-            };
-            userModel.destroyUserSession(requestData, response);
-
-            return response.status(204).end();
+        // request.session.destroy를 프로미스화하여 비동기로 처리
+        await new Promise((resolve, reject) => {
+            request.session.destroy(error => {
+                if (error) {
+                    console.log(error);
+                    reject(
+                        response.status(500).json({
+                            status: 500,
+                            message: 'internal_server_error',
+                            data: null,
+                        }),
+                    );
+                } else {
+                    resolve();
+                }
+            });
         });
+
+        const requestData = { userId };
+
+        await userModel.destroyUserSession(requestData, response);
+
+        return response.status(204).end();
     } catch (error) {
         console.log(error);
         return response.status(500).json({
