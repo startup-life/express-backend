@@ -8,6 +8,7 @@
 -   [설치](#설치)
 -   [실행](#실행)
 -   [환경 변수 설정](#환경-변수-설정)
+-   [협업 및 코드 스타일](#협업-및-코드-스타일)
 -   [주요 기능](#주요-기능)
 -   [API 엔드포인트](#api-엔드포인트)
 -   [사용된 기술 스택](#사용된-기술-스택)
@@ -66,14 +67,13 @@ express-backend/
 
 ## 설치
 
-1. **프로젝트 포크** GitHub에서 [이 프로젝트](https://github.com/startup-life/express-backend)를 포크하세요.
+1. **프로젝트 포크** GitHub에서 [이 프로젝트](https://github.com/username/express-backend)를 포크하세요.
 
 2. **클론** 포크한 프로젝트를 자신의 로컬 머신으로 클론합니다.
 
     ```bash
-    git clone https://github.com/startup-life/express-backend.git
+    git clone https://github.com/your-username/express-backend.git
     cd express-backend
-
     ```
 
 3. **의존성 설치**
@@ -111,6 +111,16 @@ SESSION_SECRET=secret
 
 NODE_ENV=development
 ```
+
+## 협업 및 코드 스타일
+
+이 프로젝트에서는 코드 스타일, 커밋 메시지, 그리고 Pull Request 작성 시 준수해야 할 규칙을 설정해두었습니다. 다음 파일들을 참고하여 협업 시 일관성을 유지하세요:
+
+-   **`.gitmessage.txt`**: 커밋 메시지 작성 시 사용할 템플릿입니다. 주제, 내용, 꼬리말의 형식을 준수하여 커밋 메시지를 작성해주세요.
+-   **`eslint.config.js`**: 이 파일은 프로젝트의 코드 스타일을 관리합니다. AirBnB 스타일 가이드를 따르며, Prettier와의 호환성도 유지됩니다.
+-   **`.github/PULL_REQUEST_TEMPLATE.md`**: Pull Request를 작성할 때 사용되는 템플릿입니다. PR 작성 시 이 템플릿을 따라 내용을 작성하세요.
+
+이러한 파일들은 프로젝트의 루트 디렉토리에 위치해 있으며, GitHub에서 직접 확인할 수 있습니다.
 
 ## 주요 기능
 
