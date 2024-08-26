@@ -100,7 +100,7 @@ jobs:
               uses: peter-evans/create-pull-request@v3
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
-                  commit-message: "chore(release): update changelog and version [skip ci]"
-                  title: "Release ${{ github.run_id }}"
+                  commit-message: 'chore: update changelog and version [skip ci]'
+                  title: 'Release ${{ github.run_id }}'
                   branch: release/${{ github.run_id }}
                   base: 'main'
