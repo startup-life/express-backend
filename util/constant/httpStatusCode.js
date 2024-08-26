@@ -9,7 +9,7 @@ const STATUS_CODE = {
     CONFLICT: 409,
     TOO_MANY_REQUESTS: 429,
     INTERNAL_SERVER_ERROR: 500,
-    SERVER_TIMEOUT: 503,
+    SERVER_TIMEOUT: 503
 };
 
 const STATUS_MESSAGE = {
@@ -77,10 +77,10 @@ const STATUS_MESSAGE = {
 
     FILE_UPLOAD_SUCCESS: 'file_upload_success',
 
-    INTERNAL_SERVER_ERROR: 'internal_server_error',
+    INTERNAL_SERVER_ERROR: 'internal_server_error'
 };
 
 module.exports = {
     STATUS_CODE,
-    STATUS_MESSAGE,
+    STATUS_MESSAGE
 };

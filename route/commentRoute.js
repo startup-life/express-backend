@@ -7,22 +7,22 @@ const router = express.Router();
 router.get(
     '/posts/:post_id/comments',
     isLoggedIn,
-    commentController.getComments,
+    commentController.getComments
 );
 router.post(
     '/posts/:post_id/comments',
     isLoggedIn,
-    commentController.writeComment,
+    commentController.writeComment
 );
 router.patch(
     '/posts/:post_id/comments/:comment_id',
     isLoggedIn,
-    commentController.updateComment,
+    commentController.updateComment
 );
 router.delete(
     '/posts/:post_id/comments/:comment_id',
     isLoggedIn,
-    commentController.softDeleteComment,
+    commentController.softDeleteComment
 );
 
 module.exports = router;

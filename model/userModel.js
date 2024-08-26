@@ -33,11 +33,12 @@ exports.loginUser = async (requestData, response) => {
         const profileResults = await dbConnect.query(
             profileSql,
             [results[0].file_id],
-            response,
+            response
         );
         results[0].profileImagePath = profileResults[0].file_path;
     } else {
-        results[0].profileImagePath = '/public/image/profile/default.png';
+        results[0].profileImagePath =
+            'https://express-backend.s3.ap-northeast-2.amazonaws.com/public/image/profile/default.jpg';
     }
 
     const user = {
@@ -48,7 +49,7 @@ exports.loginUser = async (requestData, response) => {
         sessionId,
         created_at: results[0].created_at,
         updated_at: results[0].updated_at,
-        deleted_at: results[0].deleted_at,
+        deleted_at: results[0].deleted_at
     };
 
     // 세션 업데이트 로직
@@ -59,7 +60,7 @@ exports.loginUser = async (requestData, response) => {
 };
 
 // 회원가입
-exports.signUpUser = async requestData => {
+exports.signUpUser = async (requestData) => {
     const { email, password, nickname, profileImagePath } = requestData;
 
     const checkEmailSql = `SELECT email FROM user_table WHERE email = ?;`;
@@ -74,7 +75,7 @@ exports.signUpUser = async requestData => {
     const userResults = await dbConnect.query(insertUserSql, [
         email,
         password,
-        nickname,
+        nickname
     ]);
 
     if (!userResults.insertId) return null;
@@ -87,7 +88,7 @@ exports.signUpUser = async requestData => {
         `;
         const fileResults = await dbConnect.query(insertFileSql, [
             userResults.insertId,
-            profileImagePath,
+            profileImagePath
         ]);
 
         if (fileResults.insertId) {
@@ -100,23 +101,23 @@ exports.signUpUser = async requestData => {
             `;
             await dbConnect.query(updateUserSql, [
                 profileImageId,
-                userResults.insertId,
+                userResults.insertId
             ]);
         }
     }
 
     return {
         userId: userResults.insertId,
-        profileImageId: profileImageId,
+        profileImageId: profileImageId
     };
 };
 
 // 유저 정보 불러오기
-exports.getUser = async requestData => {
+exports.getUser = async (requestData) => {
     const { userId } = requestData;
 
     const sql = `
-    SELECT user_table.*, COALESCE(file_table.file_path, '/public/image/profile/default.jpg') AS file_path
+    SELECT user_table.*, COALESCE(file_table.file_path, 'https://express-backend.s3.ap-northeast-2.amazonaws.com/public/image/profile/default.jpg') AS file_path
     FROM user_table
     LEFT JOIN file_table ON user_table.file_id = file_table.file_id
     WHERE user_table.user_id = ? AND user_table.deleted_at IS NULL;
@@ -134,13 +135,13 @@ exports.getUser = async requestData => {
         profile_image: userData[0].file_path,
         created_at: userData[0].created_at,
         updated_at: userData[0].updated_at,
-        deleted_at: userData[0].deleted_at,
+        deleted_at: userData[0].deleted_at
     };
     return results;
 };
 
 // 회원정보 수정
-exports.updateUser = async requestData => {
+exports.updateUser = async (requestData) => {
     const { userId, nickname, profileImagePath } = requestData;
 
     const updateUserSql = `
@@ -150,7 +151,7 @@ exports.updateUser = async requestData => {
     `;
     const updateUserResults = await dbConnect.query(updateUserSql, [
         nickname,
-        userId,
+        userId
     ]);
 
     if (!updateUserResults) return null;
@@ -164,7 +165,7 @@ exports.updateUser = async requestData => {
     `;
     const profileImageResults = await dbConnect.query(profileImageSql, [
         userId,
-        profileImagePath,
+        profileImagePath
     ]);
 
     if (!profileImageResults.insertId)
@@ -177,14 +178,14 @@ exports.updateUser = async requestData => {
     `;
     const userProfileResults = await dbConnect.query(userProfileSql, [
         profileImageResults.insertId,
-        userId,
+        userId
     ]);
 
     return userProfileResults;
 };
 
 // 비밀번호 변경
-exports.changePassword = async requestData => {
+exports.changePassword = async (requestData) => {
     const { userId, password } = requestData;
 
     const sql = `
@@ -200,7 +201,7 @@ exports.changePassword = async requestData => {
 };
 
 // 회원탈퇴
-exports.softDeleteUser = async requestData => {
+exports.softDeleteUser = async (requestData) => {
     const { userId } = requestData;
     const selectSql = `SELECT * FROM user_table WHERE user_id = ? AND deleted_at IS NULL;`;
     const selectResults = await dbConnect.query(selectSql, [userId]);
@@ -214,7 +215,7 @@ exports.softDeleteUser = async requestData => {
 };
 
 // 이메일 중복 체크
-exports.checkEmail = async requestData => {
+exports.checkEmail = async (requestData) => {
     const { email } = requestData;
 
     const sql = `SELECT email FROM user_table WHERE email = ?;`;
@@ -226,7 +227,7 @@ exports.checkEmail = async requestData => {
 };
 
 // 이메일 중복 체크
-exports.checkNickname = async requestData => {
+exports.checkNickname = async (requestData) => {
     const { nickname } = requestData;
 
     const sql = `SELECT nickname FROM user_table WHERE nickname = ?;`;

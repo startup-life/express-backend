@@ -2,7 +2,7 @@ const mysql = require('mysql2/promise');
 const postModel = require('../model/postModel.js');
 const {
     STATUS_CODE,
-    STATUS_MESSAGE,
+    STATUS_MESSAGE
 } = require('../util/constant/httpStatusCode');
 
 /**
@@ -18,36 +18,36 @@ exports.writePost = async (request, response, next) => {
     const { userid: userId } = request.headers;
     const { postTitle, postContent, attachFilePath } = request.body;
 
-    if (!postTitle) {
-        const error = new Error(STATUS_MESSAGE.INVALID_POST_TITLE);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
-    if (postTitle.length > 26) {
-        const error = new Error(STATUS_MESSAGE.INVALID_POST_TITLE_LENGTH);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
-    if (!postContent) {
-        const error = new Error(STATUS_MESSAGE.INVALID_POST_CONTENT);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
-    if (postContent.length > 1500) {
-        const error = new Error(STATUS_MESSAGE.INVALID_POST_CONTENT_LENGHT);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
     try {
+        if (!postTitle) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_TITLE);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
+        if (postTitle.length > 26) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_TITLE_LENGTH);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
+        if (!postContent) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_CONTENT);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
+        if (postContent.length > 1500) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_CONTENT_LENGHT);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
         const requestData = {
             userId,
             postTitle,
             postContent,
-            attachFilePath: attachFilePath || null,
+            attachFilePath: attachFilePath || null
         };
         const responseData = await postModel.writePost(requestData);
 
@@ -66,7 +66,7 @@ exports.writePost = async (request, response, next) => {
         return response.status(STATUS_CODE.CREATED).json({
             status: STATUS_CODE.CREATED,
             message: STATUS_MESSAGE.WRITE_POST_SUCCESS,
-            data: responseData,
+            data: responseData
         });
     } catch (error) {
         next(error);
@@ -77,16 +77,15 @@ exports.writePost = async (request, response, next) => {
 exports.getPosts = async (request, response, next) => {
     const { offset, limit } = request.query;
 
-    if (!offset || !limit) {
-        const error = new Error(STATUS_MESSAGE.INVALID_OFFSET_OR_LIMIT);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
     try {
+        if (!offset || !limit) {
+            const error = new Error(STATUS_MESSAGE.INVALID_OFFSET_OR_LIMIT);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
         const requestData = {
             offset: parseInt(offset, 10),
-            limit: parseInt(limit, 10),
+            limit: parseInt(limit, 10)
         };
         const responseData = await postModel.getPosts(requestData);
 
@@ -99,7 +98,7 @@ exports.getPosts = async (request, response, next) => {
         return response.status(STATUS_CODE.OK).json({
             status: STATUS_CODE.OK,
             message: STATUS_MESSAGE.GET_POSTS_SUCCESS,
-            data: responseData,
+            data: responseData
         });
     } catch (error) {
         next(error);
@@ -110,15 +109,15 @@ exports.getPosts = async (request, response, next) => {
 exports.getPost = async (request, response, next) => {
     const { post_id: postId } = request.params;
 
-    if (!postId) {
-        const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
     try {
+        if (!postId) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
         const requestData = {
-            postId,
+            postId
         };
         const responseData = await postModel.getPost(requestData, response);
 
@@ -131,7 +130,7 @@ exports.getPost = async (request, response, next) => {
         return response.status(STATUS_CODE.OK).json({
             status: STATUS_CODE.OK,
             message: null,
-            data: responseData,
+            data: responseData
         });
     } catch (error) {
         next(error);
@@ -144,25 +143,25 @@ exports.updatePost = async (request, response, next) => {
     const { userid: userId } = request.headers;
     const { postTitle, postContent, attachFilePath } = request.body;
 
-    if (!postId) {
-        const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
-    if (postTitle.length > 26) {
-        const error = new Error(STATUS_MESSAGE.INVALID_POST_TITLE_LENGTH);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
     try {
+        if (!postId) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
+        if (postTitle.length > 26) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_TITLE_LENGTH);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
         const requestData = {
             postId,
             userId,
             postTitle,
             postContent,
-            attachFilePath: attachFilePath || null,
+            attachFilePath: attachFilePath || null
         };
         const responseData = await postModel.updatePost(requestData);
 
@@ -175,7 +174,7 @@ exports.updatePost = async (request, response, next) => {
         return response.status(STATUS_CODE.OK).json({
             status: STATUS_CODE.OK,
             message: STATUS_MESSAGE.UPDATE_POST_SUCCESS,
-            data: responseData,
+            data: responseData
         });
     } catch (error) {
         next(error);
@@ -186,15 +185,15 @@ exports.updatePost = async (request, response, next) => {
 exports.softDeletePost = async (request, response, next) => {
     const { post_id: postId } = request.params;
 
-    if (!postId) {
-        const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
-        error.status = STATUS_CODE.BAD_REQUEST;
-        throw error;
-    }
-
     try {
+        if (!postId) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
         const requestData = {
-            postId,
+            postId
         };
         const results = await postModel.softDeletePost(requestData);
 
@@ -207,7 +206,7 @@ exports.softDeletePost = async (request, response, next) => {
         return response.status(STATUS_CODE.OK).json({
             status: STATUS_CODE.OK,
             message: STATUS_MESSAGE.DELETE_POST_SUCCESS,
-            data: null,
+            data: null
         });
     } catch (error) {
         return next(error);

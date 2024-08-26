@@ -7,12 +7,12 @@ const router = express.Router();
 router.post(
     '/users/upload/profile-image',
     multerUtil.uploadProfile.single('profileImage'),
-    fileController.uploadFile,
+    fileController.uploadFile
 );
 router.post(
     '/posts/upload/attach-file',
     multerUtil.uploadPost.single('postFile'),
-    fileController.uploadPostFile,
+    fileController.uploadPostFile
 );
 
 module.exports = router;

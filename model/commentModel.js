@@ -8,11 +8,11 @@ const dbConnect = require('../database/index.js');
  */
 
 // 댓글 조회
-exports.getComments = async requestData => {
+exports.getComments = async (requestData) => {
     const { postId } = requestData;
 
     const sql = `
-    SELECT ct.*, ut.file_id, COALESCE(ft.file_path, '/public/image/profile/default.jpg') AS profileImage
+    SELECT ct.*, ut.file_id, COALESCE(ft.file_path, 'https://express-backend.s3.ap-northeast-2.amazonaws.com/public/image/profile/default.jpg') AS profileImage
     FROM comment_table AS ct
     LEFT JOIN user_table AS ut ON ct.user_id = ut.user_id
     LEFT JOIN file_table AS ft ON ut.file_id = ft.file_id
@@ -25,7 +25,7 @@ exports.getComments = async requestData => {
 };
 
 // 댓글 작성
-exports.writeComment = async requestData => {
+exports.writeComment = async (requestData) => {
     const { postId, userId, commentContent } = requestData;
 
     const nicknameSql = `
@@ -55,7 +55,7 @@ exports.writeComment = async requestData => {
         postId,
         userId,
         nickname,
-        commentContent,
+        commentContent
     ]);
 
     if (!results) return 'insert_error';
@@ -71,7 +71,7 @@ exports.writeComment = async requestData => {
 };
 
 // 댓글 수정
-exports.updateComment = async requestData => {
+exports.updateComment = async (requestData) => {
     const { postId, commentId, userId, commentContent } = requestData;
 
     const checkPostSql = `
@@ -94,7 +94,7 @@ exports.updateComment = async requestData => {
         commentContent,
         postId,
         commentId,
-        userId,
+        userId
     ]);
 
     if (!results || results.affectedRows === 0) return 'update_error';
@@ -103,7 +103,7 @@ exports.updateComment = async requestData => {
 };
 
 // 댓글 삭제
-exports.softDeleteComment = async requestData => {
+exports.softDeleteComment = async (requestData) => {
     const { postId, commentId, userId } = requestData;
 
     // 게시물 존재 여부 확인
@@ -124,7 +124,7 @@ exports.softDeleteComment = async requestData => {
     const checkUserResults = await dbConnect.query(checkUserSql, [
         postId,
         commentId,
-        userId,
+        userId
     ]);
 
     if (!checkUserResults || checkUserResults.length === 0) {

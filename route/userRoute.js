@@ -18,7 +18,7 @@ router.put('/users/:user_id', isLoggedIn, userController.updateUser);
 router.patch(
     '/users/:user_id/password',
     isLoggedIn,
-    userController.changePassword,
+    userController.changePassword
 );
 
 router.delete('/users/:user_id', isLoggedIn, userController.softDeleteUser);
