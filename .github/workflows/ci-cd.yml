@@ -4,10 +4,10 @@ name: express-backend CI/CD
 on:
     push:
         branches:
-            - develop
+            - main
     pull_request:
         branches:
-            - develop
+            - main
 
 jobs:
     build:
@@ -72,21 +72,3 @@ jobs:
                   pm2 kill
                   pm2 start app.js --name "github-action-app"
                   EOF
-
-    release:
-        name: release
-        runs-on: ubuntu-latest
-
-        steps:
-            - uses: actions/checkout@v4
-            - uses: actions/setup-node@v4
-              with:
-                  cache: npm
-                  node-version: 'lts/*'
-                  registry-url: 'https://npm.pkg.github.com/'
-                  scope: '@github-id'
-            - run: npm ci
-            #- run: npm run build
-            - run: npx semantic-release
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
