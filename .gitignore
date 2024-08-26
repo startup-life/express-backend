@@ -35,9 +35,6 @@ npm-debug.log
 .env.*
 !.env.example
 
-.env.*
-
 .idea/
 
 public/
-
