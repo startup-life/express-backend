@@ -32,7 +32,8 @@ npm-debug.log
 .DS_Store
 
 .env
-.env.dev
+.env.*
+!.env.example
 
 .idea/
 
