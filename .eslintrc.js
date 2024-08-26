@@ -4,6 +4,7 @@ module.exports = {
         commonjs: true,
         es2021: true
     },
+    ignorePatterns: ['jest.setup.js', 'jest.config.js', 'test/'],
     extends: 'eslint:recommended',
     parserOptions: {
         ecmaVersion: 12
