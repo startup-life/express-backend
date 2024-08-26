@@ -5,7 +5,7 @@ const notFoundHandler = (request, response, next) => {
     next(error);
 };
 
-const errorHandler = (error, request, response, next) => {
+const errorHandler = (error, request, response) => {
     if (request.timedout) {
         response.status(STATUS_CODE.SERVER_TIMEOUT);
         return response.send({
