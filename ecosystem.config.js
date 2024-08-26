@@ -7,8 +7,8 @@ module.exports = {
             instances: 'max',
             user: 'ubuntu', // Node.js 프로세스를 실행할 사용자
             env: {
-                NODE_ENV: 'production',
-            },
-        },
-    ],
+                NODE_ENV: 'production'
+            }
+        }
+    ]
 };

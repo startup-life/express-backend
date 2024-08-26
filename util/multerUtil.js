@@ -7,8 +7,8 @@ const s3Client = new S3Client({
     region: process.env.AWS_REGION,
     credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    },
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    }
 });
 
 // 프로필 이미지를 위한 multer-s3 storage 설정
@@ -22,9 +22,9 @@ const profileStorage = multerS3({
         const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
         cb(
             null,
-            `image/profile/${file.fieldname}-${uniqueSuffix}.${file.originalname.split('.').pop()}`,
+            `image/profile/${file.fieldname}-${uniqueSuffix}.${file.originalname.split('.').pop()}`
         );
-    },
+    }
 });
 
 // 게시물 이미지를 위한 multer-s3 storage 설정
@@ -38,9 +38,9 @@ const postStorage = multerS3({
         const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
         cb(
             null,
-            `image/post/${file.fieldname}-${uniqueSuffix}.${file.originalname.split('.').pop()}`,
+            `image/post/${file.fieldname}-${uniqueSuffix}.${file.originalname.split('.').pop()}`
         );
-    },
+    }
 });
 
 // 각각의 storage 설정을 사용하여 두 개의 multer 인스턴스 생성

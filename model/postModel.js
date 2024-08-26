@@ -10,7 +10,7 @@ const { STATUS_MESSAGE } = require('../util/constant/httpStatusCode');
  */
 
 // 게시글 작성
-exports.writePost = async requestData => {
+exports.writePost = async (requestData) => {
     const { userId, postTitle, postContent, attachFilePath } = requestData;
 
     const nicknameSql = `
@@ -32,7 +32,7 @@ exports.writePost = async requestData => {
         userId,
         nicknameResults[0].nickname,
         postTitle,
-        postContent,
+        postContent
     ]);
     if (!writePostResults) {
         return null;
@@ -47,7 +47,7 @@ exports.writePost = async requestData => {
         const postFileResults = await dbConnect.query(postFilePathSql, [
             userId,
             writePostResults.insertId,
-            attachFilePath,
+            attachFilePath
         ]);
 
         const updatePostSql = `
@@ -57,7 +57,7 @@ exports.writePost = async requestData => {
         `;
         await dbConnect.query(updatePostSql, [
             postFileResults.insertId,
-            writePostResults.insertId,
+            writePostResults.insertId
         ]);
 
         writePostResults.filePath = attachFilePath;
@@ -164,7 +164,7 @@ exports.getPost = async (requestData, response) => {
     const userResults = await dbConnect.query(
         userSql,
         [postResult.user_id],
-        response,
+        response
     );
 
     // 유저 프로필 이미지 가져오기
@@ -175,7 +175,7 @@ exports.getPost = async (requestData, response) => {
         const profileImageResults = await dbConnect.query(
             profileImageSql,
             [userResults[0].file_id, postResult.user_id],
-            response,
+            response
         );
 
         if (profileImageResults && profileImageResults.length > 0) {
@@ -186,7 +186,7 @@ exports.getPost = async (requestData, response) => {
 };
 
 // 게시글 수정
-exports.updatePost = async requestData => {
+exports.updatePost = async (requestData) => {
     const { postId, userId, postTitle, postContent, attachFilePath } =
         requestData;
 
@@ -198,7 +198,7 @@ exports.updatePost = async requestData => {
     const updatePostResults = await dbConnect.query(updatePostSql, [
         postTitle,
         postContent,
-        postId,
+        postId
     ]);
 
     if (!updatePostResults) return null;
@@ -218,7 +218,7 @@ exports.updatePost = async requestData => {
         WHERE file_path = ?;
         `;
         const checkResults = await dbConnect.query(checkFilePathSql, [
-            attachFilePath,
+            attachFilePath
         ]);
         if (checkResults[0].existing === 0) {
             // 파일 경로가 존재하지 않으면 새로운 파일 정보 삽입
@@ -230,7 +230,7 @@ exports.updatePost = async requestData => {
             const postFileResults = await dbConnect.query(postFilePathSql, [
                 userId,
                 postId,
-                attachFilePath,
+                attachFilePath
             ]);
 
             // file_id 업데이트
@@ -241,7 +241,7 @@ exports.updatePost = async requestData => {
             `;
             await dbConnect.query(updatePostFileSql, [
                 postFileResults.insertId,
-                postId,
+                postId
             ]);
         }
     }
@@ -250,7 +250,7 @@ exports.updatePost = async requestData => {
 };
 
 // 게시글 삭제
-exports.softDeletePost = async requestData => {
+exports.softDeletePost = async (requestData) => {
     const { postId } = requestData;
 
     const sql = `
