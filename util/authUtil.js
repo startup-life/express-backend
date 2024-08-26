@@ -1,27 +1,24 @@
-import * as dbConnect from '../database/index.js';
+const dbConnect = require('../database/index.js');
+const { STATUS_CODE, STATUS_MESSAGE } = require('./constant/httpStatusCode');
 
 const isLoggedIn = async (req, res, next) => {
-    const { method, url } = req;
-    console.log(`[isLoggedIn] method: ${method}, url: ${url}`);
-
     const { session } = req.headers;
     const userId =
         req.headers.userid && !Number.isNaN(req.headers.userid)
             ? parseInt(req.headers.userid, 10)
             : null;
 
-    if (!userId) {
-        return res.status(401).json({
-            status: 401,
-            message: 'required_authorization',
-            data: null,
-        });
-    }
-
     try {
+        if (!userId) {
+            const error = new Error(STATUS_MESSAGE.REQUIRED_AUTHORIZATION);
+            error.status = STATUS_CODE.UNAUTHORIZED;
+            throw error;
+        }
+
         const userSessionData = await dbConnect.query(
-            `SELECT session_id FROM user_table WHERE user_id = ${userId};`,
-            res,
+            `SELECT session_id FROM user_table WHERE user_id = ?;`,
+            [userId],
+            res
         );
 
         if (
@@ -29,22 +26,15 @@ const isLoggedIn = async (req, res, next) => {
             userSessionData.length === 0 ||
             session !== userSessionData[0].session_id
         ) {
-            return res.status(401).json({
-                status: 401,
-                message: 'required_authorization',
-                data: null,
-            });
+            const error = new Error(STATUS_MESSAGE.REQUIRED_AUTHORIZATION);
+            error.status = STATUS_CODE.UNAUTHORIZED;
+            throw error;
         }
 
         return next();
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({
-            status: 500,
-            message: 'internal_server_error',
-            data: null,
-        });
+        return next(error);
     }
 };
 
-export default isLoggedIn;
+module.exports = isLoggedIn;

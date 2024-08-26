@@ -1,12 +1,7 @@
-export default {
-    printWidth: 80,
-    tabWidth: 4,
-    useTabs: false,
+module.exports = {
     semi: true,
+    trailingComma: 'none',
     singleQuote: true,
-    trailingComma: 'all',
-    bracketSpacing: true,
-    arrowParens: 'avoid',
-    proseWrap: 'never',
-    endOfLine: 'auto',
+    printWidth: 80,
+    tabWidth: 4
 };

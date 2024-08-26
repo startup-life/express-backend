@@ -1,33 +1,46 @@
-export const uploadFile = (request, response) => {
-    if (!request.file)
-        response.status(400).send({
-            status: 400,
-            message: 'invalid_file',
-            data: null,
-        });
+const {
+    STATUS_CODE,
+    STATUS_MESSAGE
+} = require('../util/constant/httpStatusCode');
 
-    response.status(201).send({
-        status: 201,
-        message: 'file_upload_success',
-        data: {
-            filePath: `/public/image/profile/${request.file.filename}`,
-        },
-    });
+exports.uploadFile = (request, response, next) => {
+    try {
+        if (!request.file) {
+            const error = new Error(STATUS_MESSAGE.INVALID_FILE);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
+        response.status(STATUS_CODE.CREATED).send({
+            status: STATUS_CODE.CREATED,
+            message: STATUS_MESSAGE.FILE_UPLOAD_SUCCESS,
+            data: {
+                //filePath: `image/profile/${request.file.filename}`,
+                filePath: request.file.location // S3 객체 URL 반환
+            }
+        });
+    } catch (error) {
+        return next(error);
+    }
 };
 
-export const uploadPostFile = (request, response) => {
-    if (!request.file)
-        response.status(400).send({
-            status: 400,
-            message: 'invalid_file',
-            data: null,
-        });
+exports.uploadPostFile = (request, response, next) => {
+    try {
+        if (!request.file) {
+            const error = new Error(STATUS_MESSAGE.INVALID_FILE);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
 
-    response.status(201).send({
-        status: 201,
-        message: 'file_upload_success',
-        data: {
-            filePath: `/public/image/post/${request.file.filename}`,
-        },
-    });
+        response.status(STATUS_CODE.CREATED).send({
+            status: STATUS_CODE.CREATED,
+            message: STATUS_MESSAGE.FILE_UPLOAD_SUCCESS,
+            data: {
+                // filePath: `image/post/${request.file.filename}`,
+                filePath: request.file.location // S3 객체 URL 반환
+            }
+        });
+    } catch (error) {
+        return next(error);
+    }
 };

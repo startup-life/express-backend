@@ -1,301 +1,214 @@
-import mysql from 'mysql2/promise';
-import * as postModel from '../model/postModel.js';
+const mysql = require('mysql2/promise');
+const postModel = require('../model/postModel.js');
+const {
+    STATUS_CODE,
+    STATUS_MESSAGE
+} = require('../util/constant/httpStatusCode');
 
 /**
  * 게시글 작성
- * 파일 업로드
  * 게시글 목록 조회
  * 게시글 상세 조회
  * 게시글 수정
+ * 게시글 삭제
  */
 
 // 게시글 작성
-export const writePost = async (request, response) => {
+exports.writePost = async (request, response, next) => {
+    const { userid: userId } = request.headers;
+    const { postTitle, postContent, attachFilePath } = request.body;
+
     try {
-        if (request.attachFilePath === undefined) request.attachFilePath = null;
-        if (!request.body.postTitle)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_post_title',
-                data: null,
-            });
-        if (request.body.postTitle.length > 26)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_post_title_length',
-                data: null,
-            });
-        if (!request.body.postContent)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_post_content',
-                data: null,
-            });
-        if (request.body.postContent.length > 1500)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_post_content_length',
-                data: null,
-            });
-
-        const { postTitle, postContent, attachFilePath } = request.body;
-        const userId = request.headers.userid;
-
-        const requestData = {
-            userId: mysql.escape(userId),
-            postTitle: mysql.escape(postTitle),
-            postContent: mysql.escape(postContent),
-            attachFilePath:
-                attachFilePath === null ? null : mysql.escape(attachFilePath),
-        };
-        const results = await postModel.writePlainPost(requestData, response);
-
-        if (!results || results === null)
-            return response.status(500).json({
-                status: 500,
-                message: 'failed_to_write_post',
-                data: null,
-            });
-
-        if (attachFilePath != null) {
-            const reqFileData = {
-                userId: mysql.escape(userId),
-                postId: results.insertId,
-                filePath: mysql.escape(attachFilePath),
-            };
-
-            const resFileData = await postModel.uploadFile(
-                reqFileData,
-                response,
-            );
-            results.filePath = resFileData;
+        if (!postTitle) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_TITLE);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
         }
 
-        return response.status(201).json({
-            status: 201,
-            message: 'write_post_success',
-            data: results,
-        });
-    } catch (error) {
-        console.error(error);
-        return response.status(500).json({
-            status: 500,
-            message: 'internal_server_error',
-            data: null,
-        });
-    }
-};
+        if (postTitle.length > 26) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_TITLE_LENGTH);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
 
-// 파일 업로드
-export const uploadFile = async (request, response) => {
-    try {
-        if (!request.filePath)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_file_path',
-                data: null,
-            });
+        if (!postContent) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_CONTENT);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
 
-        const { userId, postId, filePath } = request.body;
+        if (postContent.length > 1500) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_CONTENT_LENGHT);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
 
         const requestData = {
             userId,
-            postId,
-            filePath,
+            postTitle,
+            postContent,
+            attachFilePath: attachFilePath || null
         };
-        const results = await postModel.uploadFile(requestData, response);
+        const responseData = await postModel.writePost(requestData);
 
-        if (!results || results === null)
-            return response.status(500).json({
-                status: 500,
-                message: 'internal_server_error',
-                data: null,
-            });
+        if (responseData === STATUS_MESSAGE.NOT_FOUND_USER) {
+            const error = new Error(STATUS_MESSAGE.NOT_FOUND_USER);
+            error.status = STATUS_CODE.NOT_FOUND;
+            throw error;
+        }
 
-        return response.status(201).json({
-            status: 201,
-            message: null,
-            data: results,
+        if (!responseData) {
+            const error = new Error(STATUS_MESSAGE.WRITE_POST_FAILED);
+            error.status = STATUS_CODE.INTERNAL_SERVER_ERROR;
+            throw error;
+        }
+
+        return response.status(STATUS_CODE.CREATED).json({
+            status: STATUS_CODE.CREATED,
+            message: STATUS_MESSAGE.WRITE_POST_SUCCESS,
+            data: responseData
         });
     } catch (error) {
-        console.error(error);
-        return response.status(500).json({
-            status: 500,
-            message: 'internal_server_error',
-            data: null,
-        });
+        next(error);
     }
 };
 
 // 게시글 목록 조회
-export const getPosts = async (request, response) => {
+exports.getPosts = async (request, response, next) => {
+    const { offset, limit } = request.query;
+
     try {
-        if (!request.query.offset || !request.query.limit)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_offset_or_limit',
-                data: null,
-            });
-
-        const { offset, limit } = request.query;
-
+        if (!offset || !limit) {
+            const error = new Error(STATUS_MESSAGE.INVALID_OFFSET_OR_LIMIT);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
         const requestData = {
-            offset,
-            limit,
+            offset: parseInt(offset, 10),
+            limit: parseInt(limit, 10)
         };
-        const results = await postModel.getPosts(requestData, response);
+        const responseData = await postModel.getPosts(requestData);
 
-        if (!results || results === null)
-            return response.status(404).json({
-                status: 404,
-                message: 'not_a_single_post',
-                data: null,
-            });
+        if (!responseData || responseData.length === 0) {
+            const error = new Error(STATUS_MESSAGE.NOT_A_SINGLE_POST);
+            error.status = STATUS_CODE.NOT_FOUND;
+            throw error;
+        }
 
-        return response.status(200).json({
-            status: 200,
-            message: null,
-            data: results,
+        return response.status(STATUS_CODE.OK).json({
+            status: STATUS_CODE.OK,
+            message: STATUS_MESSAGE.GET_POSTS_SUCCESS,
+            data: responseData
         });
     } catch (error) {
-        console.error(error);
-        return response.status(500).json({
-            status: 500,
-            message: 'internal_server_error',
-            data: null,
-        });
+        next(error);
     }
 };
 
 // 게시글 상세 조회
-export const getPost = async (request, response) => {
-    try {
-        if (!request.params.post_id)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_post_id',
-                data: null,
-            });
+exports.getPost = async (request, response, next) => {
+    const { post_id: postId } = request.params;
 
-        const postId = request.params.post_id;
+    try {
+        if (!postId) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
 
         const requestData = {
-            postId,
+            postId
         };
-        const results = await postModel.getPost(requestData, response);
+        const responseData = await postModel.getPost(requestData, response);
 
-        if (!results || results === null)
-            return response.status(404).json({
-                status: 404,
-                message: 'not_a_single_post',
-                data: null,
-            });
+        if (!responseData) {
+            const error = new Error(STATUS_MESSAGE.NOT_A_SINGLE_POST);
+            error.status = STATUS_CODE.NOT_FOUND;
+            throw error;
+        }
 
-        return response.status(200).json({
-            status: 200,
+        return response.status(STATUS_CODE.OK).json({
+            status: STATUS_CODE.OK,
             message: null,
-            data: results,
+            data: responseData
         });
     } catch (error) {
-        console.error(error);
-        return response.status(500).json({
-            status: 500,
-            message: 'internal_server_error',
-            data: null,
-        });
+        next(error);
     }
 };
 
 // 게시글 수정
-export const updatePost = async (request, response) => {
+exports.updatePost = async (request, response, next) => {
+    const { post_id: postId } = request.params;
+    const { userid: userId } = request.headers;
+    const { postTitle, postContent, attachFilePath } = request.body;
+
     try {
-        if (!request.params.post_id)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_post_id',
-                data: null,
-            });
+        if (!postId) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
 
-        if (request.body.postTitle.length > 26)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_post_title_length',
-                data: null,
-            });
-
-        const postId = request.params.post_id;
-        const userId = request.headers.userid;
-        const { postTitle, postContent, attachFilePath } = request.body;
+        if (postTitle.length > 26) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_TITLE_LENGTH);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
 
         const requestData = {
-            postId: mysql.escape(postId),
-            userId: mysql.escape(userId),
-            postTitle: mysql.escape(postTitle),
-            postContent: mysql.escape(postContent),
-            attachFilePath:
-                attachFilePath === undefined
-                    ? null
-                    : mysql.escape(attachFilePath),
+            postId,
+            userId,
+            postTitle,
+            postContent,
+            attachFilePath: attachFilePath || null
         };
-        const results = await postModel.updatePost(requestData, response);
+        const responseData = await postModel.updatePost(requestData);
 
-        if (!results || results === null)
-            return response.status(404).json({
-                status: 404,
-                message: 'not_a_single_post',
-                data: null,
-            });
+        if (!responseData) {
+            const error = new Error(STATUS_MESSAGE.NOT_A_SINGLE_POST);
+            error.status = STATUS_CODE.NOT_FOUND;
+            throw error;
+        }
 
-        return response.status(200).json({
-            status: 200,
-            message: 'update_post_success',
-            data: results,
+        return response.status(STATUS_CODE.OK).json({
+            status: STATUS_CODE.OK,
+            message: STATUS_MESSAGE.UPDATE_POST_SUCCESS,
+            data: responseData
         });
     } catch (error) {
-        console.error(error);
-        return response.status(500).json({
-            status: 500,
-            message: 'internal_server_error',
-            data: null,
-        });
+        next(error);
     }
 };
 
 // 게시글 삭제
-export const softDeletePost = async (request, response) => {
-    try {
-        if (!request.params.post_id)
-            return response.status(400).json({
-                status: 400,
-                message: 'invalid_post_id',
-                data: null,
-            });
+exports.softDeletePost = async (request, response, next) => {
+    const { post_id: postId } = request.params;
 
-        const postId = request.params.post_id;
+    try {
+        if (!postId) {
+            const error = new Error(STATUS_MESSAGE.INVALID_POST_ID);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
 
         const requestData = {
-            postId: mysql.escape(postId),
+            postId
         };
-        const results = await postModel.softDeletePost(requestData, response);
+        const results = await postModel.softDeletePost(requestData);
 
-        if (!results || results === null)
-            return response.status(404).json({
-                status: 404,
-                message: 'not_a_single_post',
-                data: null,
-            });
+        if (!results) {
+            const error = new Error(STATUS_MESSAGE.NOT_A_SINGLE_POST);
+            error.status = STATUS_CODE.NOT_FOUND;
+            throw error;
+        }
 
-        return response.status(200).json({
-            status: 200,
-            message: 'delete_post_success',
-            data: null,
+        return response.status(STATUS_CODE.OK).json({
+            status: STATUS_CODE.OK,
+            message: STATUS_MESSAGE.DELETE_POST_SUCCESS,
+            data: null
         });
     } catch (error) {
-        console.error(error);
-        return response.status(500).json({
-            status: 500,
-            message: 'internal_server_error',
-            data: null,
-        });
+        return next(error);
     }
 };

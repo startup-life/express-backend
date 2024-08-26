@@ -1,15 +1,19 @@
-import express from 'express';
-import userRoute from './userRoute.js'; // 사용자 라우트
-import postRoute from './postRoute.js'; // 게시물 라우트
-import fileRoute from './fileRoute.js'; // 파일 라우트
-import commentRoute from './commentRoute.js'; // 댓글 라우트
-
+const express = require('express');
 const router = express.Router();
+const fs = require('fs');
 
-// 각 라우트를 수동으로 설정
-router.use(userRoute);
-router.use(postRoute);
-router.use(fileRoute);
-router.use(commentRoute);
+// route 폴더에 있는 파일의 이름을 조회해서 라우팅
+fs.readdirSync(__dirname)
+    .filter((file) => {
+        return (
+            file.indexOf('.') !== 0 &&
+            file !== 'index.js' &&
+            file.slice(-3) === '.js'
+        );
+    })
+    .forEach((file) => {
+        const route = require(`./${file}`);
+        router.use(route);
+    });
 
-export default router;
+module.exports = router;
