@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [1.1.0](https://github.com/startup-life/express-backend/compare/v1.0.0...v1.1.0) (2024-08-26)
+
+### 🚀 NEW FEATURES
+
+* sementic release 설정 파일 분리 ([90d44e7](https://github.com/startup-life/express-backend/commit/90d44e7c5835acb824026d08854e09c042779b5b))
+
 ## 1.0.0 (2024-08-26)
 
 ### 🚀 NEW FEATURES
