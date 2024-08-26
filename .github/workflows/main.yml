@@ -92,10 +92,10 @@ jobs:
             - name: Create Pull Request
               uses: peter-evans/create-pull-request@v3
               with:
-                token: ${{ secrets.GH_TOKEN }}
-                commit-message: "deploy: Update versions and changelog"
-                title: "deploy: update versions and changelog"
-                body: "This PR was created by GitHub Actions."
-                branch: "develop"
-                base: "main"
-                labels: "release"
+                  token: ${{ secrets.GH_TOKEN }}
+                  commit-message: 'deploy: Update versions and changelog'
+                  title: 'deploy: update versions and changelog'
+                  body: 'This PR was created by GitHub Actions.'
+                  branch: 'develop'
+                  base: 'main'
+                  labels: 'release'
