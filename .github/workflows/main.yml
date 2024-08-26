@@ -93,9 +93,9 @@ jobs:
               uses: peter-evans/create-pull-request@v3
               with:
                   token: ${{ secrets.GH_TOKEN }}
-                  commit-message: "Update versions and changelog"
-                  title: "chore(release): update versions and changelog"
-                  body: "This PR was created by GitHub Actions."
-                  branch: "release-${{ github.run_number }}"
-                  base: "main"
-                  labels: "automerge"
+                  commit-message: 'Update versions and changelog'
+                  title: 'chore(release): update versions and changelog'
+                  body: 'This PR was created by GitHub Actions.'
+                  branch: 'release-${{ github.run_number }}'
+                  base: 'main'
+                  labels: 'automerge'
