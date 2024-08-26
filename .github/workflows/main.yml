@@ -82,8 +82,8 @@ jobs:
             - uses: actions/setup-node@v4
               with:
                   cache: npm
-                  node-version: "lts/*"
-                  registry-url: "https://npm.pkg.github.com/"
+                  node-version: 'lts/*'
+                  registry-url: 'https://npm.pkg.github.com/'
                   scope: '@github-id'
             - run: npm ci
             - run: npm run build
