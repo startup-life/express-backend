@@ -73,10 +73,9 @@ jobs:
                   pm2 start app.js --name "github-action-app"
                   EOF
 
-    release: # 새로운 release job 추가
-        name: Semantic-release
+    release:
+        needs: build
         runs-on: ubuntu-latest
-
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-node@v4
@@ -86,7 +85,22 @@ jobs:
                   registry-url: 'https://npm.pkg.github.com/'
                   scope: '@github-id'
             - run: npm ci
-            #- run: npm run build # 빌드가 필요한 경우 (Express.js는 대부분 빌드 과정이 필요 없음)
+            - name: Create Release Branch
+              run: |
+                  git config --global user.name '${{ secrets.ACTOR_NAME }}'
+                  git config --global user.email '${{ secrets.ACTIVE_EMAIL }}'
+                  git checkout -b release/${{ github.run_id }}
             - run: npx semantic-release
               env:
                   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+            - name: Push Changes
+              run: |
+                  git push origin release/${{ github.run_id }}
+            - name: Create Pull Request
+              uses: peter-evans/create-pull-request@v3
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  commit-message: "chore(release): update changelog and version [skip ci]"
+                  title: "Release ${{ github.run_id }}"
+                  branch: release/${{ github.run_id }}
+                  base: 'main'
