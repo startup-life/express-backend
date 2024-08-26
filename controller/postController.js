@@ -1,4 +1,3 @@
-const mysql = require('mysql2/promise');
 const postModel = require('../model/postModel.js');
 const {
     STATUS_CODE,
