@@ -74,19 +74,32 @@ jobs:
                   EOF
 
     release:
-        name: release
+        name: Release
         runs-on: ubuntu-latest
-
         steps:
             - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0 # 이 옵션은 모든 브랜치와 태그를 fetch 하기 위함입니다
             - uses: actions/setup-node@v4
               with:
-                  cache: npm
                   node-version: 'lts/*'
-                  registry-url: 'https://npm.pkg.github.com/'
-                  scope: '@github-id'
+                  cache: 'npm'
             - run: npm ci
-            #- run: npm run build
-            - run: npx semantic-release
+            - name: Semantic Release
+              run: npx semantic-release
               env:
                   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+                  GIT_AUTHOR_NAME: 'github-actions[bot]'
+                  GIT_AUTHOR_EMAIL: 'github-actions[bot]@users.noreply.github.com'
+                  GIT_COMMITTER_NAME: 'github-actions[bot]'
+                  GIT_COMMITTER_EMAIL: 'github-actions[bot]@users.noreply.github.com'
+            - name: Create Pull Request
+              uses: peter-evans/create-pull-request@v3
+              with:
+                  token: ${{ secrets.GH_TOKEN }}
+                  commit-message: Update versions and changelog
+                  title: 'chore(release): update versions and changelog'
+                  body: 'This PR was created by GitHub Actions.'
+                  branch: 'release-${{ github.run_number }}'
+                  base: 'main'
+                  labels: 'automerge'
