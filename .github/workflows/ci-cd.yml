@@ -5,6 +5,7 @@ on:
     push:
         branches:
             - main
+            - develop # test branch
     pull_request:
         branches:
             - main
@@ -64,8 +65,8 @@ jobs:
                   [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
                   nvm use 20
                   cd /home/${{ secrets.SERVER_USER }}/backend
-                  git checkout -b  action-dev
-                  sudo git pull origin action-dev
+                  git checkout -b main
+                  sudo git pull origin main
                   sudo chown -R $USER /home/ubuntu/backend
                   sudo chmod -R 777 /home/ubuntu/backend
                   npm install
