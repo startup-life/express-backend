@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [1.1.1](https://github.com/startup-life/express-backend/compare/v1.1.0...v1.1.1) (2024-08-30)
+
+### 📚 DOCUMENTATION
+
+* 프로젝트 설명을 위한 README 추가 ([b54aa12](https://github.com/startup-life/express-backend/commit/b54aa1257d3e6b691d8770d8053094f85617aec5))
+* 협업 및 코드 스타일 섹션 추가 ([afbe8e1](https://github.com/startup-life/express-backend/commit/afbe8e1cacc68b05a5dd408af7f1916ad7e3f174))
+
 ## [1.1.0](https://github.com/startup-life/express-backend/compare/v1.0.0...v1.1.0) (2024-08-26)
 
 ### 🚀 NEW FEATURES
