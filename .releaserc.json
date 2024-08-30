@@ -1,5 +1,5 @@
 {
-    "branches": ["develop", "next"],
+    "branches": ["release", "next"],
     "plugins": [
         [
             "@semantic-release/commit-analyzer",
@@ -95,13 +95,6 @@
             {
                 "changelogFile": "CHANGELOG.md",
                 "changelogTitle": "# CHANGELOG"
-            }
-        ],
-        [
-            "@semantic-release/npm",
-            {
-                "pkgRoot": ".",
-                "tarball": "dist"
             }
         ],
         "@semantic-release/github",
