@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [1.1.2](https://github.com/startup-life/express-backend/compare/v1.1.1...v1.1.2) (2024-09-13)
+
+### 🐛 BUG FIXES
+
+* authutil 에러 처리 방식 변경 ([dd69d50](https://github.com/startup-life/express-backend/commit/dd69d5016a6efff14a40f151a6f1bd65e72b108e))
+
 ## [1.1.1](https://github.com/startup-life/express-backend/compare/v1.1.0...v1.1.1) (2024-08-30)
 
 ### 📚 DOCUMENTATION
