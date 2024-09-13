@@ -12,7 +12,7 @@ const isLoggedIn = async (req, res, next) => {
         if (!userId) {
             const error = new Error(STATUS_MESSAGE.REQUIRED_AUTHORIZATION);
             error.status = STATUS_CODE.UNAUTHORIZED;
-            throw error;
+            return next(error);
         }
 
         const userSessionData = await dbConnect.query(
@@ -28,12 +28,12 @@ const isLoggedIn = async (req, res, next) => {
         ) {
             const error = new Error(STATUS_MESSAGE.REQUIRED_AUTHORIZATION);
             error.status = STATUS_CODE.UNAUTHORIZED;
-            throw error;
+            return next(error);
         }
 
         return next();
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };
 
