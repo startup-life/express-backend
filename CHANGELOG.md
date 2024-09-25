@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [1.1.3](https://github.com/startup-life/express-backend/compare/v1.1.2...v1.1.3) (2024-09-25)
+
+### 🐛 BUG FIXES
+
+* 에러 핸들링이 정상적으로 동작하지 않는 오류 해결 ([a89e1ea](https://github.com/startup-life/express-backend/commit/a89e1ea6c099627d57c89472ea93f28dd1e11143))
+
 ## [1.1.2](https://github.com/startup-life/express-backend/compare/v1.1.1...v1.1.2) (2024-09-13)
 
 ### 🐛 BUG FIXES

@@ -5,7 +5,7 @@ const session = require('express-session');
 const cors = require('cors');
 const route = require('./route/index.js');
 const dbConnect = require('./database/index.js');
-const { notFoundHandler, errorHandler } = require('./util/errorHandler.js');
+const { errorHandler } = require('./util/errorHandler.js');
 const timeout = require('connect-timeout');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
@@ -111,7 +111,6 @@ app.use(helmet());
 app.use('/', route);
 
 // Error Handler
-app.use(notFoundHandler);
 app.use(errorHandler);
 
 // 초기화 후 서버 시작
