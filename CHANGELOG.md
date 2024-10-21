@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [1.1.4](https://github.com/startup-life/express-backend/compare/v1.1.3...v1.1.4) (2024-10-21)
+
+### 🐛 BUG FIXES
+
+* 이전 커밋 적용 안된 부분 수정 및 도커 파일 추가 ([29aee2a](https://github.com/startup-life/express-backend/commit/29aee2acb4ce75ad644a5bd7b08d932b463e3e5a))
+
 ## [1.1.3](https://github.com/startup-life/express-backend/compare/v1.1.2...v1.1.3) (2024-09-25)
 
 ### 🐛 BUG FIXES
