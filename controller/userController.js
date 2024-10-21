@@ -232,7 +232,7 @@ exports.checkAuth = async (request, response, next) => {
                 userId,
                 email: userData.email,
                 nickname: userData.nickname,
-                profileImagePath: userData.profile_image,
+                profileImagePath: userData.profile_image || null,
                 auth_token: userData.session_id,
                 auth_status: true
             }
