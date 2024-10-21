@@ -36,7 +36,6 @@ express-backend/
 ├── public/                     # 정적 파일 (이미지 등)
 │   └── image/
 │       └── profile/
-│           └── default.jpg
 ├── route/                      # 라우터 설정 파일
 │   ├── commentRoute.js
 │   ├── fileRoute.js

@@ -33,6 +33,7 @@ npm-debug.log
 
 .env
 .env.*
+!.env.dev.example
 !.env.example
 
 .idea/
