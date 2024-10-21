@@ -36,14 +36,14 @@ exports.loginUser = async (requestData, response) => {
         );
         results[0].profileImagePath = profileResults[0].file_path;
     } else {
-        results[0].profileImagePath = '/public/image/profile/default.png';
+        results[0].profileImagePath = null;
     }
 
     const user = {
         userId: results[0].user_id,
         email: results[0].email,
         nickname: results[0].nickname,
-        profileImagePath: results[0].profile_image_path,
+        profileImagePath: results[0].profileImagePath,
         sessionId,
         created_at: results[0].created_at,
         updated_at: results[0].updated_at,
@@ -115,7 +115,7 @@ exports.getUser = async (requestData) => {
     const { userId } = requestData;
 
     const sql = `
-    SELECT user_table.*, COALESCE(file_table.file_path, '/public/image/profile/default.jpg') AS file_path
+    SELECT user_table.*, COALESCE(file_table.file_path, NULL) AS file_path
     FROM user_table
     LEFT JOIN file_table ON user_table.file_id = file_table.file_id
     WHERE user_table.user_id = ? AND user_table.deleted_at IS NULL;

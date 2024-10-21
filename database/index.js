@@ -8,7 +8,7 @@ const config = {
     database: process.env.DB_DATABASE,
     port: process.env.DB_PORT,
     connectionLimit: 10,
-    waitForConnections: true,
+    waitForConnections: true
 };
 
 /* DB Pool 생성 */

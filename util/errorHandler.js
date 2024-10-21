@@ -5,15 +5,15 @@ const notFoundHandler = (request, response, next) => {
     next(error);
 };
 
-const errorHandler = (error, request, response, next) => {
+const errorHandler = (error, request, response, _next) => {
     if (request.timeout) {
         response.status(STATUS_CODE.SERVER_TIMEOUT);
         response.send({
             error: {
                 status: STATUS_CODE.SERVER_TIMEOUT,
                 message: STATUS_MESSAGE.REQUEST_TIMEOUT,
-                data: null,
-            },
+                data: null
+            }
         });
     }
 
@@ -22,8 +22,8 @@ const errorHandler = (error, request, response, next) => {
         error: {
             status: error.status || STATUS_CODE.INTERNAL_SERVER_ERROR,
             message: error.message || STATUS_MESSAGE.INTERNAL_SERVER_ERROR,
-            data: null,
-        },
+            data: null
+        }
     });
 };
 

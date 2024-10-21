@@ -9,9 +9,9 @@ const profileStorage = multer.diskStorage({
         const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
         cb(
             null,
-            `${file.fieldname}-${uniqueSuffix}.${file.originalname.split('.').pop()}`,
+            `${file.fieldname}-${uniqueSuffix}.${file.originalname.split('.').pop()}`
         );
-    },
+    }
 });
 
 // 게시물 이미지를 위한 multer storage 설정
@@ -23,9 +23,9 @@ const postStorage = multer.diskStorage({
         const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
         cb(
             null,
-            `${file.fieldname}-${uniqueSuffix}.${file.originalname.split('.').pop()}`,
+            `${file.fieldname}-${uniqueSuffix}.${file.originalname.split('.').pop()}`
         );
-    },
+    }
 });
 
 // 각각의 storage 설정을 사용하여 두 개의 multer 인스턴스 생성
