@@ -9,8 +9,10 @@ const { errorHandler } = require('./util/errorHandler.js');
 const timeout = require('connect-timeout');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+/* ELB 적용 시 주석 처리
 const fs = require('fs');
 const https = require('https');
+ */
 const { STATUS_MESSAGE } = require('./util/constant/httpStatusCode');
 
 const app = express();
@@ -27,6 +29,7 @@ const PORT = process.env.BACKEND_PORT || 3000;
 app.use(cors('*'));
 
 // 세션 초기화 함수
+/* ELB 적용 전
 const initSessionId = async () => {
     const sql = 'UPDATE user_table SET session_id = NULL;';
     try {
@@ -55,6 +58,19 @@ const startHttpsServer = () => {
     return https.createServer(httpsOptions, app).listen(PORT, () => {
         console.log(`[HTTPS] edu-community app listening on port ${PORT}`);
     });
+};
+*/
+
+// ELB 적용 후
+const initSessionId = async () => {
+    const sql = 'UPDATE user_table SET session_id = NULL;';
+    try {
+        await dbConnect.query(sql);
+        startHttpServer();
+    } catch (error) {
+        console.error('Failed to initialize session IDs:', error);
+        process.exit(1); // 실패 시 프로세스 종료
+    }
 };
 
 const startHttpServer = () => {
@@ -116,4 +132,8 @@ app.use(errorHandler);
 // 초기화 후 서버 시작
 initSessionId();
 
+/* ELB 적용 전
 module.exports = { app, startHttpServer, startHttpsServer };
+*/
+// ELB 적용 후
+module.exports = { app, startHttpServer };
