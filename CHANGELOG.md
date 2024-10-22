@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [1.1.5](https://github.com/startup-life/express-backend/compare/v1.1.4...v1.1.5) (2024-10-22)
+
+### ♻️ REFACTORING
+
+* aws elb 적용으로 인한 https 제거 (주석 처리) ([c8bb3fb](https://github.com/startup-life/express-backend/commit/c8bb3fbfe6c6ac6437a79ac9f70255cfd69288e6))
+
 ## [1.1.4](https://github.com/startup-life/express-backend/compare/v1.1.3...v1.1.4) (2024-10-21)
 
 ### 🐛 BUG FIXES
