@@ -54,7 +54,6 @@ exports.loginUser = async (request, response, next) => {
             throw error;
         }
         return response.status(STATUS_CODE.OK).json({
-            status: STATUS_CODE.OK,
             message: STATUS_MESSAGE.LOGIN_SUCCESS,
             data: responseData
         });
@@ -108,7 +107,6 @@ exports.signupUser = async (request, response, next) => {
         }
 
         return response.status(STATUS_CODE.CREATED).json({
-            status: STATUS_CODE.CREATED,
             message: STATUS_MESSAGE.SIGNUP_SUCCESS,
             data: resSignupData
         });
@@ -140,7 +138,6 @@ exports.getUser = async (request, response, next) => {
         }
 
         return response.status(200).json({
-            status: 200,
             message: null,
             data: responseData
         });
@@ -187,7 +184,6 @@ exports.updateUser = async (request, response, next) => {
         }
 
         return response.status(STATUS_CODE.CREATED).json({
-            status: STATUS_CODE.CREATED,
             message: STATUS_MESSAGE.UPDATE_USER_DATA_SUCCESS,
             data: null
         });
@@ -226,7 +222,6 @@ exports.checkAuth = async (request, response, next) => {
         }
 
         return response.status(STATUS_CODE.OK).json({
-            status: STATUS_CODE.OK,
             message: null,
             data: {
                 userId,
@@ -275,7 +270,6 @@ exports.changePassword = async (request, response, next) => {
         }
 
         return response.status(STATUS_CODE.CREATED).json({
-            status: STATUS_CODE.CREATED,
             message: STATUS_MESSAGE.CHANGE_USER_PASSWORD_SUCCESS,
             data: null
         });
@@ -307,7 +301,6 @@ exports.softDeleteUser = async (request, response, next) => {
         }
 
         return response.status(STATUS_CODE.OK).json({
-            status: STATUS_CODE.OK,
             message: STATUS_MESSAGE.DELETE_USER_DATA_SUCCESS,
             data: null
         });
@@ -359,7 +352,6 @@ exports.checkEmail = async (request, response, next) => {
 
         if (resData === null) {
             return response.status(STATUS_CODE.OK).json({
-                status: STATUS_CODE.OK,
                 message: STATUS_MESSAGE.AVAILVABLE_EMAIL,
                 data: null
             });
@@ -390,7 +382,6 @@ exports.checkNickname = async (request, response, next) => {
 
         if (!responseData) {
             return response.status(STATUS_CODE.OK).json({
-                status: STATUS_CODE.OK,
                 message: STATUS_MESSAGE.AVAILABLE_NICKNAME,
                 data: null
             });
