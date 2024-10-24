@@ -63,7 +63,6 @@ exports.writePost = async (request, response, next) => {
         }
 
         return response.status(STATUS_CODE.CREATED).json({
-            status: STATUS_CODE.CREATED,
             message: STATUS_MESSAGE.WRITE_POST_SUCCESS,
             data: responseData
         });
@@ -95,7 +94,6 @@ exports.getPosts = async (request, response, next) => {
         }
 
         return response.status(STATUS_CODE.OK).json({
-            status: STATUS_CODE.OK,
             message: STATUS_MESSAGE.GET_POSTS_SUCCESS,
             data: responseData
         });
@@ -127,7 +125,6 @@ exports.getPost = async (request, response, next) => {
         }
 
         return response.status(STATUS_CODE.OK).json({
-            status: STATUS_CODE.OK,
             message: null,
             data: responseData
         });
@@ -171,7 +168,6 @@ exports.updatePost = async (request, response, next) => {
         }
 
         return response.status(STATUS_CODE.OK).json({
-            status: STATUS_CODE.OK,
             message: STATUS_MESSAGE.UPDATE_POST_SUCCESS,
             data: responseData
         });
@@ -203,7 +199,6 @@ exports.softDeletePost = async (request, response, next) => {
         }
 
         return response.status(STATUS_CODE.OK).json({
-            status: STATUS_CODE.OK,
             message: STATUS_MESSAGE.DELETE_POST_SUCCESS,
             data: null
         });

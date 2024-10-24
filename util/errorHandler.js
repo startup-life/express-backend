@@ -9,7 +9,6 @@ const errorHandler = (error, request, response, next) => {
         console.error('Request timed out:', request.originalUrl); // 타임아웃 발생 시 로그 출력
         return response.status(STATUS_CODE.SERVER_TIMEOUT).send({
             error: {
-                status: STATUS_CODE.SERVER_TIMEOUT,
                 message: STATUS_MESSAGE.REQUEST_TIMEOUT,
                 data: null
             }
@@ -18,7 +17,6 @@ const errorHandler = (error, request, response, next) => {
 
     response.status(error.status || STATUS_CODE.INTERNAL_SERVER_ERROR).send({
         error: {
-            status: error.status || STATUS_CODE.INTERNAL_SERVER_ERROR,
             message: error.message || STATUS_MESSAGE.INTERNAL_SERVER_ERROR,
             data: null
         }

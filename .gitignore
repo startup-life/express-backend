@@ -38,4 +38,5 @@ npm-debug.log
 
 .idea/
 
-public/
+public/image/post/*
+public/image/profile/*
