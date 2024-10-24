@@ -34,7 +34,6 @@ exports.getComments = async (request, response, next) => {
         }
 
         return response.status(STATUS_CODE.OK).json({
-            status: STATUS_CODE.OK,
             message: null,
             data: responseData
         });
@@ -91,7 +90,6 @@ exports.writeComment = async (request, response, next) => {
         }
 
         return response.status(STATUS_CODE.CREATED).json({
-            status: STATUS_CODE.CREATED,
             message: STATUS_MESSAGE.WRITE_COMMENT_SUCCESS,
             data: null
         });
@@ -154,7 +152,6 @@ exports.updateComment = async (request, response, next) => {
         }
 
         return response.status(STATUS_CODE.OK).json({
-            status: STATUS_CODE.OK,
             message: STATUS_MESSAGE.UPDATE_COMMENT_SUCCESS,
             data: null
         });
@@ -207,7 +204,6 @@ exports.softDeleteComment = async (request, response, next) => {
         }
 
         return response.status(STATUS_CODE.OK).json({
-            status: STATUS_CODE.OK,
             message: STATUS_MESSAGE.DELETE_COMMENT_SUCCESS,
             data: null
         });

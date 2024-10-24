@@ -5,10 +5,12 @@ node_modules/
 .DS_Store
 
 .env
-
 .env.*
+!.env.dev.example
 
 .idea/
 
-public/
+
+public/image/post/*
+public/image/profile/*
 

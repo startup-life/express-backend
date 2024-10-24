@@ -12,7 +12,6 @@ exports.uploadFile = (request, response, next) => {
         }
 
         response.status(STATUS_CODE.CREATED).send({
-            status: STATUS_CODE.CREATED,
             message: STATUS_MESSAGE.FILE_UPLOAD_SUCCESS,
             data: {
                 filePath: `/public/image/profile/${request.file.filename}`
@@ -32,7 +31,6 @@ exports.uploadPostFile = (request, response, next) => {
         }
 
         response.status(STATUS_CODE.CREATED).send({
-            status: STATUS_CODE.CREATED,
             message: STATUS_MESSAGE.FILE_UPLOAD_SUCCESS,
             data: {
                 filePath: `/public/image/post/${request.file.filename}`
