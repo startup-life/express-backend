@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [1.2.0](https://github.com/startup-life/express-backend/compare/v1.1.5...v1.2.0) (2024-10-24)
+
+### 🚀 NEW FEATURES
+
+* API 요청 반환 값에서 상태코드 제거 ([1dbf681](https://github.com/startup-life/express-backend/commit/1dbf681de6bd3913c48b9bad2c4bc00098b0f77d))
+
 ## [1.1.5](https://github.com/startup-life/express-backend/compare/v1.1.4...v1.1.5) (2024-10-22)
 
 ### ♻️ REFACTORING
