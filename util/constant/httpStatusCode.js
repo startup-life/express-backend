@@ -46,6 +46,9 @@ const STATUS_MESSAGE = {
     CHANGE_USER_PASSWORD_SUCCESS: 'change_user_password_success',
     DELETE_USER_DATA_SUCCESS: 'delete_user_data_success',
 
+    INVALID_JWT_TOKEN: 'invalid_jwt_token',
+    JWT_TOKEN_UPDATED: 'jwt_token_updated',
+
     /*================= Post =================*/
     INVALID_POST_ID: 'invalid_post_id',
     INVALID_POST_TITLE: 'invalid_post_title',

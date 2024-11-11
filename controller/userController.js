@@ -43,8 +43,8 @@ exports.loginUser = async (request, response, next) => {
 
         const requestData = {
             email,
-            password,
-            sessionId: request.sessionID
+            password
+            // sessionId: request.sessionID
         };
         const responseData = await userModel.loginUser(requestData, response);
 
@@ -193,8 +193,9 @@ exports.updateUser = async (request, response, next) => {
 };
 
 // 로그인 상태 체크
-exports.checkAuth = async (request, response, next) => {
-    const { userid: userId } = request.headers;
+/*exports.checkAuth = async (request, response, next) => {
+    // const { userid: userId } = request.headers;
+    const { userId } = request;
 
     try {
         if (!userId) {
@@ -235,7 +236,7 @@ exports.checkAuth = async (request, response, next) => {
     } catch (error) {
         return next(error);
     }
-};
+};*/
 
 // 비밀번호 변경
 exports.changePassword = async (request, response, next) => {
@@ -311,7 +312,8 @@ exports.softDeleteUser = async (request, response, next) => {
 
 // 로그아웃
 exports.logoutUser = async (request, response, next) => {
-    const { userid: userId } = request.headers;
+    // const { userid: userId } = request.headers;
+    const { userId } = request;
 
     try {
         request.session.destroy(async (error) => {

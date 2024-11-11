@@ -1,7 +1,7 @@
 require('dotenv').config({ path: './.env.dev' });
 
 const express = require('express');
-const session = require('express-session');
+// const session = require('express-session');
 const cors = require('cors');
 const route = require('./route/index.js');
 const dbConnect = require('./database/index.js');
@@ -85,7 +85,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // 세션 설정
-app.use(
+/*app.use(
     session({
         secret: process.env.SESSION_SECRET,
         resave: false,
@@ -96,7 +96,7 @@ app.use(
             maxAge: 1000 * 60 * 60 * 24 // 1 day
         }
     })
-);
+);*/
 
 // Timeout 설정
 app.use(timeout('5s'));
