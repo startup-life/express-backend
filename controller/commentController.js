@@ -45,7 +45,8 @@ exports.getComments = async (request, response, next) => {
 // 댓글 작성
 exports.writeComment = async (request, response, next) => {
     const { post_id: postId } = request.params;
-    const { userid: userId } = request.headers;
+    // const { userid: userId } = request.headers;
+    const { userId } = request;
     const { commentContent } = request.body;
 
     try {
@@ -101,7 +102,8 @@ exports.writeComment = async (request, response, next) => {
 // 댓글 수정
 exports.updateComment = async (request, response, next) => {
     const { post_id: postId, comment_id: commentId } = request.params;
-    const { userid: userId } = request.headers;
+    // const { userid: userId } = request.headers;
+    const { userId } = request;
     const { commentContent } = request.body;
 
     try {
@@ -163,7 +165,8 @@ exports.updateComment = async (request, response, next) => {
 // 댓글 삭제
 exports.softDeleteComment = async (request, response, next) => {
     const { post_id: postId, comment_id: commentId } = request.params;
-    const { userid: userId } = request.headers;
+    // const { userid: userId } = request.headers;
+    const { userId } = request;
 
     try {
         if (!postId) {

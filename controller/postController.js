@@ -14,7 +14,8 @@ const {
 
 // 게시글 작성
 exports.writePost = async (request, response, next) => {
-    const { userid: userId } = request.headers;
+    // const { userid: userId } = request.headers;
+    const { userId } = request;
     const { postTitle, postContent, attachFilePath } = request.body;
 
     try {
@@ -137,7 +138,8 @@ exports.getPost = async (request, response, next) => {
 // 게시글 수정
 exports.updatePost = async (request, response, next) => {
     const { post_id: postId } = request.params;
-    const { userid: userId } = request.headers;
+    // const { userid: userId } = request.headers;
+    const { userId } = request;
     const { postTitle, postContent, attachFilePath } = request.body;
 
     try {

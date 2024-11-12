@@ -1,6 +1,9 @@
 const bcrypt = require('bcrypt');
 const dbConnect = require('../database/index.js');
 const { STATUS_MESSAGE } = require('../util/constant/httpStatusCode');
+const jwt = require('jsonwebtoken');
+
+const SECRET_KEY = process.env.JWT_SECRET;
 
 /**
  * 로그인
@@ -16,7 +19,8 @@ const { STATUS_MESSAGE } = require('../util/constant/httpStatusCode');
 
 // 로그인
 exports.loginUser = async (requestData, response) => {
-    const { email, password, sessionId } = requestData;
+    // const { email, password, sessionId } = requestData;
+    const { email, password } = requestData;
 
     const sql = `SELECT * FROM user_table WHERE email = ? AND deleted_at IS NULL;`;
     const results = await dbConnect.query(sql, [email], response);
@@ -39,20 +43,26 @@ exports.loginUser = async (requestData, response) => {
         results[0].profileImagePath = null;
     }
 
+    const { user_id: userId, nickname } = results[0];
+    const accessToken = jwt.sign({ userId, nickname }, SECRET_KEY, {
+        expiresIn: '1d'
+    });
+
     const user = {
         userId: results[0].user_id,
         email: results[0].email,
         nickname: results[0].nickname,
         profileImagePath: results[0].profileImagePath,
-        sessionId,
+        // sessionId,
+        accessToken,
         created_at: results[0].created_at,
         updated_at: results[0].updated_at,
         deleted_at: results[0].deleted_at
     };
 
     // 세션 업데이트 로직
-    const sessionSql = `UPDATE user_table SET session_id = ? WHERE user_id = ?;`;
-    await dbConnect.query(sessionSql, [sessionId, user.userId]);
+    // const sessionSql = `UPDATE user_table SET session_id = ? WHERE user_id = ?;`;
+    // await dbConnect.query(sessionSql, [sessionId, user.userId]);
 
     return user;
 };
@@ -130,7 +140,8 @@ exports.getUser = async (requestData) => {
         userId: userData[0].user_id,
         email: userData[0].email,
         nickname: userData[0].nickname,
-        profile_image: userData[0].file_path,
+        // profile_image: userData[0].file_path,
+        profileImagePath: userData[0].file_path,
         created_at: userData[0].created_at,
         updated_at: userData[0].updated_at,
         deleted_at: userData[0].deleted_at
