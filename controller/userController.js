@@ -44,7 +44,6 @@ exports.loginUser = async (request, response, next) => {
         const requestData = {
             email,
             password
-            // sessionId: request.sessionID
         };
         const responseData = await userModel.loginUser(requestData, response);
 
@@ -312,26 +311,8 @@ exports.softDeleteUser = async (request, response, next) => {
 
 // 로그아웃
 exports.logoutUser = async (request, response, next) => {
-    // const { userid: userId } = request.headers;
-    const { userId } = request;
-
     try {
-        request.session.destroy(async (error) => {
-            if (error) {
-                return next(error);
-            }
-
-            try {
-                const requestData = {
-                    userId
-                };
-                await userModel.destroyUserSession(requestData, response);
-
-                return response.status(STATUS_CODE.END).end();
-            } catch (error) {
-                return next(error);
-            }
-        });
+        return response.status(STATUS_CODE.END).end();
     } catch (error) {
         return next(error);
     }
