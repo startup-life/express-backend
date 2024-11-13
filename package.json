@@ -33,6 +33,7 @@
     "mysql2": "^3.9.7",
     "path": "^0.12.7",
     "prettier": "^3.2.5",
+    "redis": "^4.7.0",
     "rotating-file-stream": "^3.2.1"
   },
   "devDependencies": {

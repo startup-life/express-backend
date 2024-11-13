@@ -1,7 +1,6 @@
 require('dotenv').config({ path: './.env.dev' });
 
 const express = require('express');
-// const session = require('express-session');
 const cors = require('cors');
 const route = require('./route/index.js');
 const dbConnect = require('./database/index.js');
@@ -83,20 +82,6 @@ app.use('/public', express.static('public'));
 // JSON 및 URL-encoded 요청 파싱
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-// 세션 설정
-/*app.use(
-    session({
-        secret: process.env.SESSION_SECRET,
-        resave: false,
-        saveUninitialized: false,
-        cookie: {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // https에서만 동작하게 하려면 true로 변경,
-            maxAge: 1000 * 60 * 60 * 24 // 1 day
-        }
-    })
-);*/
 
 // Timeout 설정
 app.use(timeout('5s'));
