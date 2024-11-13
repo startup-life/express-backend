@@ -21,7 +21,15 @@ const isLoggedIn = async (request, response, next) => {
     }
 
     try {
-        // 1. JWT 검증
+        // 1. Redis에서 블랙리스트 확인
+        const blacklisted = await redisClient.get(`blacklist:${token}`); // 블랙리스트 키 확인
+        if (blacklisted) {
+            const error = new Error(STATUS_MESSAGE.REQUIRED_AUTHORIZATION);
+            error.status = STATUS_CODE.UNAUTHORIZED;
+            return next(error);
+        }
+
+        // 2. JWT 검증
         const decoded = jwt.verify(token, SECRET_KEY);
         if (!decoded) {
             const error = new Error(STATUS_MESSAGE.REQUIRED_AUTHORIZATION);
@@ -30,7 +38,7 @@ const isLoggedIn = async (request, response, next) => {
         }
         request.user = decoded;
 
-        // 2. redis 검증
+        // 3. Redis 검증
         const redisKey = `accessToken:${token}`; // Redis에 저장된 키 형식과 맞춤
         const storedToken = await redisClient.get(redisKey); // 정확한 키로 조회
         if (!storedToken) {

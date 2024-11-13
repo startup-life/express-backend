@@ -9,6 +9,9 @@ const {
     STATUS_CODE,
     STATUS_MESSAGE
 } = require('../util/constant/httpStatusCode.js');
+const jwt = require('jsonwebtoken');
+const redis = require('../database/redis.js');
+const redisClient = redis.v4;
 
 const SALT_ROUNDS = 10;
 
@@ -312,6 +315,27 @@ exports.softDeleteUser = async (request, response, next) => {
 // 로그아웃
 exports.logoutUser = async (request, response, next) => {
     try {
+        const token = request.headers.authorization.split(' ')[1];
+        if (!token) {
+            return response.status(STATUS_CODE.UNAUTHORIZED).json({
+                message: STATUS_MESSAGE.INVALID_JWT_TOKEN,
+                data: null
+            });
+        }
+
+        // 토큰 디코딩 및 만료 시간 계산
+        const decoded = await jwt.decode(token);
+        const expiresIn = decoded.exp - Math.floor(Date.now() / 1000); // 남은 만료 시간
+
+        // Redis에 블랙리스트로 저장
+        await redisClient.set(
+            `blacklist:${token}`,
+            'loggedOut',
+            'EX',
+            expiresIn
+        );
+
+        // 로그아웃 응답
         return response.status(STATUS_CODE.END).end();
     } catch (error) {
         return next(error);
